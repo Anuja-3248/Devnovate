@@ -1,5 +1,30 @@
 import React from 'react';
 
+// pre-configured premium color presets
+const COLOR_PRESETS = [
+  { name: 'cyan', hex: '#06b6d4', label: 'Cyan Glow' },
+  { name: 'purple', hex: '#8b5cf6', label: 'Purple Glow' },
+  { name: 'emerald', hex: '#10b981', label: 'Green Glow' },
+  { name: 'pink', hex: '#f43f5e', label: 'Pink Glow' },
+  { name: 'gold', hex: '#fbbf24', label: 'Gold Glow' }
+];
+
+// pre-configured emblem presets
+const EMBLEM_PRESETS = [
+  { id: 'star', label: '⭐ Star' },
+  { id: 'shield', label: '🛡️ Shield' },
+  { id: 'crown', label: '👑 Crown' },
+  { id: 'lightning', label: '⚡ Spark' },
+  { id: 'planet', label: '🪐 Orbit' }
+];
+
+// pre-configured destination blockchains
+const NETWORKS = [
+  { id: 'Base Sepolia', label: '🔵 Base Sepolia' },
+  { id: 'Optimism Sepolia', label: '🔴 Optimism Sepolia' },
+  { id: 'Arbitrum Sepolia', label: '📯 Arbitrum Sepolia' }
+];
+
 export default function BadgeDesigner({ formData, setFormData, account }) {
   
   const handleChange = (e) => {
@@ -10,10 +35,10 @@ export default function BadgeDesigner({ formData, setFormData, account }) {
     }));
   };
 
-  const handleStyleSelect = (style) => {
+  const handleSelect = (key, value) => {
     setFormData(prev => ({
       ...prev,
-      styleName: style
+      [key]: value
     }));
   };
 
@@ -26,8 +51,26 @@ export default function BadgeDesigner({ formData, setFormData, account }) {
   };
 
   return (
-    <div className="glass-panel" style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-      <h2 className="form-title">Design Your Gasless Credential</h2>
+    <div className="glass-panel" style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+      <h2 className="form-title">Customize Your Credential</h2>
+
+      {/* Target Destination Blockchain Switcher */}
+      <div className="form-group">
+        <label className="form-label">Destination Network</label>
+        <select 
+          name="network" 
+          className="form-input" 
+          value={formData.network} 
+          onChange={handleChange}
+          style={{ cursor: 'pointer' }}
+        >
+          {NETWORKS.map(net => (
+            <option key={net.id} value={net.id} style={{ backgroundColor: 'var(--bg-dark)' }}>
+              {net.label}
+            </option>
+          ))}
+        </select>
+      </div>
 
       {/* Badge Name Input */}
       <div className="form-group">
@@ -52,48 +95,61 @@ export default function BadgeDesigner({ formData, setFormData, account }) {
           value={formData.description} 
           onChange={handleChange}
           placeholder="Describe the milestone that this badge validates onchain..."
-          rows={3}
+          rows={2}
           maxLength={120}
           style={{ resize: 'none' }}
         />
       </div>
 
-      {/* Presets Selection Grid */}
+      {/* Emblem Presets Selector */}
       <div className="form-group">
-        <label className="form-label">Select Badge Visual Preset</label>
-        <div className="style-grid">
-          {/* Bronze Explorer */}
-          <div 
-            className={`style-option ${formData.styleName === 'bronze' ? 'selected' : ''}`}
-            onClick={() => handleStyleSelect('bronze')}
-          >
-            <span style={{ fontSize: '2rem', display: 'block', marginBottom: '0.5rem' }}>🛡️</span>
-            <span className="style-label">Bronze Explorer</span>
-          </div>
+        <label className="form-label">Select Central Emblem</label>
+        <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+          {EMBLEM_PRESETS.map(emb => (
+            <button
+              key={emb.id}
+              type="button"
+              onClick={() => handleSelect('emblem', emb.id)}
+              className="style-option"
+              style={{
+                flex: 1,
+                padding: '0.6rem 0.3rem',
+                minWidth: '70px',
+                borderColor: formData.emblem === emb.id ? formData.glowColor : 'var(--border-light)',
+                background: formData.emblem === emb.id ? `${formData.glowColor}15` : 'rgba(255, 255, 255, 0.02)',
+                color: formData.emblem === emb.id ? 'var(--text-primary)' : 'var(--text-secondary)'
+              }}
+            >
+              <span style={{ fontSize: '0.8rem', fontWeight: '700' }}>{emb.label}</span>
+            </button>
+          ))}
+        </div>
+      </div>
 
-          {/* Silver Builder */}
-          <div 
-            className={`style-option ${formData.styleName === 'silver' ? 'selected' : ''}`}
-            onClick={() => handleStyleSelect('silver')}
-          >
-            <span style={{ fontSize: '2rem', display: 'block', marginBottom: '0.5rem' }}>✨</span>
-            <span className="style-label">Silver Builder</span>
-          </div>
-
-          {/* Gold Overlord */}
-          <div 
-            className={`style-option ${formData.styleName === 'gold' ? 'selected' : ''}`}
-            onClick={() => handleStyleSelect('gold')}
-          >
-            <span style={{ fontSize: '2rem', display: 'block', marginBottom: '0.5rem' }}>👑</span>
-            <span className="style-label">Gold Overlord</span>
-          </div>
+      {/* Dynamic Preset Colors Selection */}
+      <div className="form-group">
+        <label className="form-label">Select Theme Glow Color</label>
+        <div className="color-picker-grid">
+          {COLOR_PRESETS.map(col => (
+            <button
+              key={col.name}
+              type="button"
+              className={`color-dot ${formData.glowColor === col.hex ? 'selected' : ''}`}
+              style={{ 
+                backgroundColor: col.hex, 
+                color: col.hex,
+                boxShadow: formData.glowColor === col.hex ? `0 0 14px ${col.hex}` : 'none' 
+              }}
+              onClick={() => handleSelect('glowColor', col.hex)}
+              title={col.label}
+            />
+          ))}
         </div>
       </div>
 
       {/* Recipient Wallet Address Input */}
       <div className="form-group" style={{ marginBottom: 0 }}>
-        <div style={{ display: 'flex', justifyContent: 'between', alignItems: 'center', marginBottom: '0.5rem' }}>
+        <div style={{ display: 'flex', justifyContent: 'between', alignItems: 'center', marginBottom: '0.25rem' }}>
           <label className="form-label">Recipient Wallet Address</label>
           {account && (
             <button 
