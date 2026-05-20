@@ -219,7 +219,7 @@ export default function AIAssistantPage() {
                   </Button>
                 </div>
               )}
-              
+                          </div>
 
               {msg.role === "user" && (
                 <div className="w-10 h-10 shrink-0 rounded-xl bg-white/10 flex items-center justify-center border border-white/5">
