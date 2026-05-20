@@ -21,11 +21,13 @@ export function Sidebar() {
     <div className="w-64 h-screen hidden md:flex flex-col border-r border-white/5 glass sticky top-0">
       {/* Logo */}
       <div className="h-20 flex items-center px-6 border-b border-white/5">
-        <Link href="/" className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-primary to-accent flex items-center justify-center shadow-[0_0_15px_var(--primary-glow)]">
-            <div className="w-3 h-3 bg-white rounded-full" />
+        <Link href="/" className="flex items-center gap-2 group">
+          <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-consumer-orange via-amber-500 to-consumer-purple flex items-center justify-center shadow-[0_0_15px_var(--primary-glow)] border border-white/10 group-hover:scale-105 transition-transform duration-300">
+            <div className="w-3 h-3 bg-white rounded-full flex items-center justify-center">
+              <div className="w-1.5 h-1.5 bg-consumer-orange rounded-full" />
+            </div>
           </div>
-          <span className="font-bold text-xl tracking-tight text-gradient">
+          <span className="font-bold text-xl tracking-tight text-gradient group-hover:text-consumer-orange transition-colors">
             GhostPay
           </span>
         </Link>
@@ -47,7 +49,7 @@ export function Sidebar() {
               className={cn(
                 "flex items-center gap-3 px-3 py-3 rounded-xl transition-all font-medium",
                 isActive
-                  ? "bg-primary/20 text-white shadow-[inset_0_0_10px_rgba(124,58,237,0.2)] border border-primary/30"
+                  ? "bg-primary/10 text-white shadow-[inset_0_0_10px_var(--primary-glow)] border border-primary/20"
                   : "text-foreground/70 hover:text-white hover:bg-white/5"
               )}
             >

@@ -1,16 +1,79 @@
 @import "tailwindcss";
 
 :root {
-  --background: #05050A;
-  --foreground: #F5F5F7;
+  --background: #030307;
+  --foreground: #f7f9fc;
   
-  --primary: #7C3AED;
-  --primary-glow: rgba(124, 58, 237, 0.5);
+  --primary: #ff5c16; /* MetaMask Orange as primary */
+  --primary-glow: rgba(255, 92, 22, 0.35);
   
-  --secondary: #2563EB;
-  --secondary-glow: rgba(37, 99, 235, 0.5);
+  --secondary: #d075ff; /* Consumer purple */
+  --secondary-glow: rgba(208, 117, 255, 0.35);
 
-  --accent: #06B6D4;
+  --accent: #baf24a; /* Consumer green */
+  
+  /* Motion System */
+  --motion: 1;
+  --motion-speed: 0.55s;
+  --motion-speed-slow: 0.75s;
+  --spring-ease: cubic-bezier(0.4, 1.35, 0.5, 0.97);
+  --spring-ease-duration: calc(var(--motion) * 0.5s);
+
+  /* Color System Tokens */
+  --home-light-pink: #fff1eb;
+  --general-white: #ffffff;
+  --general-white-off: #f7f9fc;
+  --general-gray-light: #e9edf6;
+  --general-gray: #c8ceda;
+  --general-gray-mid: #a1a8b7;
+  --general-gray-dark: #393d46;
+  --general-black-light: #242628;
+  --general-black-mid: #141416;
+  --general-black: #030307;
+
+  /* Consumer Palettes */
+  --consumer-orange-light: #ffa680;
+  --consumer-orange: #ff5c16;
+  --consumer-orange-dark: #661800;
+  --consumer-purple-light: #eac2ff;
+  --consumer-purple: #d075ff;
+  --consumer-purple-dark: #3d065f;
+  --consumer-purple-dark-2: #25043a;
+  --consumer-green-light: #e5ffc3;
+  --consumer-green: #baf24a;
+  --consumer-green-dark: #013330;
+  --consumer-blue-light: #cce7ff;
+  --consumer-blue: #89b0ff;
+  --consumer-blue-dark: #190066;
+
+  /* Developer Palettes */
+  --developer-orange-light: #ffa680;
+  --developer-orange: #ff5c16;
+  --developer-orange-dark: #661800;
+  --developer-purple-light: #eac2ff;
+  --developer-purple: #d075ff;
+  --developer-purple-dark: #3d065f;
+  --developer-green-light: #e5ffc3;
+  --developer-green: #baf24a;
+  --developer-green-dark: #013330;
+  --developer-green-dark-2: #012321;
+  --developer-blue-light: #cce7ff;
+  --developer-blue: #89b0ff;
+
+  /* Institution Palettes */
+  --institution-purple-tint: #eac2ff;
+  --institution-purple-light: #dd9bff;
+  --institution-purple: #d075ff;
+  --institution-purple-dark: #3d065f;
+  --institution-purple-dark-2: #25043a;
+  --institution-green-tint: #e5ffc3;
+  --institution-green: #baf24a;
+  --institution-green-dark: #013330;
+
+  /* Font System */
+  --font-mm-euclid: "MMEuclidCircularB", var(--font-plus-jakarta), Arial, sans-serif;
+  --font-mm-sans-variable: var(--font-plus-jakarta), Arial, sans-serif;
+  --font-mm-sans-mono: var(--font-jetbrains-mono), monospace;
 }
 
 @theme inline {
@@ -20,8 +83,61 @@
   --color-secondary: var(--secondary);
   --color-accent: var(--accent);
 
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  /* Neutrals mapping */
+  --color-home-light-pink: var(--home-light-pink);
+  --color-general-white: var(--general-white);
+  --color-general-white-off: var(--general-white-off);
+  --color-general-gray-light: var(--general-gray-light);
+  --color-general-gray: var(--general-gray);
+  --color-general-gray-mid: var(--general-gray-mid);
+  --color-general-gray-dark: var(--general-gray-dark);
+  --color-general-black-light: var(--general-black-light);
+  --color-general-black-mid: var(--general-black-mid);
+  --color-general-black: var(--general-black);
+
+  /* Consumer colors mapping */
+  --color-consumer-orange-light: var(--consumer-orange-light);
+  --color-consumer-orange: var(--consumer-orange);
+  --color-consumer-orange-dark: var(--consumer-orange-dark);
+  --color-consumer-purple-light: var(--consumer-purple-light);
+  --color-consumer-purple: var(--consumer-purple);
+  --color-consumer-purple-dark: var(--consumer-purple-dark);
+  --color-consumer-purple-dark-2: var(--consumer-purple-dark-2);
+  --color-consumer-green-light: var(--consumer-green-light);
+  --color-consumer-green: var(--consumer-green);
+  --color-consumer-green-dark: var(--consumer-green-dark);
+  --color-consumer-blue-light: var(--consumer-blue-light);
+  --color-consumer-blue: var(--consumer-blue);
+  --color-consumer-blue-dark: var(--consumer-blue-dark);
+
+  /* Developer colors mapping */
+  --color-developer-orange-light: var(--developer-orange-light);
+  --color-developer-orange: var(--developer-orange);
+  --color-developer-orange-dark: var(--developer-orange-dark);
+  --color-developer-purple-light: var(--developer-purple-light);
+  --color-developer-purple: var(--developer-purple);
+  --color-developer-purple-dark: var(--developer-purple-dark);
+  --color-developer-green-light: var(--developer-green-light);
+  --color-developer-green: var(--developer-green);
+  --color-developer-green-dark: var(--developer-green-dark);
+  --color-developer-green-dark-2: var(--developer-green-dark-2);
+  --color-developer-blue-light: var(--developer-blue-light);
+  --color-developer-blue: var(--developer-blue);
+
+  /* Institution colors mapping */
+  --color-institution-purple-tint: var(--institution-purple-tint);
+  --color-institution-purple-light: var(--institution-purple-light);
+  --color-institution-purple: var(--institution-purple);
+  --color-institution-purple-dark: var(--institution-purple-dark);
+  --color-institution-purple-dark-2: var(--institution-purple-dark-2);
+  --color-institution-green-tint: var(--institution-green-tint);
+  --color-institution-green: var(--institution-green);
+  --color-institution-green-dark: var(--institution-green-dark);
+
+  /* Fonts mapping */
+  --font-euclid: var(--font-mm-euclid);
+  --font-sans: var(--font-mm-sans-variable);
+  --font-mono: var(--font-mm-sans-mono);
   
   --backgroundImage-gradient-radial: radial-gradient(var(--tw-gradient-stops));
   --backgroundImage-gradient-conic: conic-gradient(from 180deg at 50% 50%, var(--tw-gradient-stops));
@@ -50,8 +166,61 @@ body {
 }
 
 .text-gradient {
-  background: linear-gradient(to right, #a78bfa, #60a5fa, #38bdf8);
+  background: linear-gradient(to right, #ff5c16, #d075ff, #baf24a);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
 }
+
+/* Scrollbar Styling */
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  background: #05050A;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(124, 58, 237, 0.2);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(124, 58, 237, 0.4);
+}
+
+/* Animations */
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-10px) rotate(1deg);
+  }
+}
+
+.animate-float {
+  animation: float 6s ease-in-out infinite;
+}
+
+@keyframes pulse-slow {
+  0%, 100% {
+    opacity: 0.2;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.4;
+    transform: scale(1.05);
+  }
+}
+
+.animate-pulse-slow {
+  animation: pulse-slow 8s ease-in-out infinite;
+}
+
+/* Grid Background Pattern */
+.bg-grid-pattern {
+  background-size: 50px 50px;
+  background-image: 
+    linear-gradient(to right, rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+}
+

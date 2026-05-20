@@ -40,7 +40,7 @@ export default function DashboardPage() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: index * 0.1 }}
-              className="glass-panel p-6 rounded-2xl relative overflow-hidden group"
+              className="glass-panel p-6 rounded-2xl relative overflow-hidden group hover:border-primary/30 hover:shadow-[0_0_25px_var(--primary-glow)] transition-all duration-300"
             >
               <div className="absolute top-0 right-0 p-6 opacity-20 group-hover:opacity-40 transition-opacity">
                 <Icon className="w-16 h-16 text-primary" />
@@ -50,11 +50,11 @@ export default function DashboardPage() {
                 <h3 className="text-3xl font-bold text-white mb-4">{stat.value}</h3>
                 <div className="flex items-center gap-1 text-sm font-medium">
                   {stat.isPositive ? (
-                    <ArrowUpRight className="w-4 h-4 text-green-400" />
+                    <ArrowUpRight className="w-4 h-4 text-consumer-green" />
                   ) : (
-                    <ArrowDownRight className="w-4 h-4 text-red-400" />
+                    <ArrowDownRight className="w-4 h-4 text-consumer-orange" />
                   )}
-                  <span className={stat.isPositive ? "text-green-400" : "text-red-400"}>
+                  <span className={stat.isPositive ? "text-consumer-green" : "text-consumer-orange"}>
                     {stat.change}
                   </span>
                 </div>
@@ -82,8 +82,8 @@ export default function DashboardPage() {
               <div key={tx.id} className="flex items-center justify-between p-4 rounded-xl glass hover:bg-white/5 transition-colors">
                 <div className="flex items-center gap-4">
                   <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
-                    tx.type === "Received" ? "bg-green-500/10 text-green-400" : 
-                    tx.type === "Sent" ? "bg-red-500/10 text-red-400" : "bg-primary/10 text-primary"
+                    tx.type === "Received" ? "bg-consumer-green-dark/20 text-consumer-green" : 
+                    tx.type === "Sent" ? "bg-consumer-orange-dark/20 text-consumer-orange" : "bg-primary/10 text-primary"
                   }`}>
                     {tx.type === "Received" ? <ArrowDownRight className="w-5 h-5" /> : 
                      tx.type === "Sent" ? <ArrowUpRight className="w-5 h-5" /> : <Award className="w-5 h-5" />}
@@ -95,7 +95,7 @@ export default function DashboardPage() {
                 </div>
                 <div className="text-right">
                   <p className={`font-bold ${
-                    tx.type === "Received" ? "text-green-400" : 
+                    tx.type === "Received" ? "text-consumer-green" : 
                     tx.type === "Sent" ? "text-white" : "text-primary"
                   }`}>{tx.amount}</p>
                   <p className="text-xs text-foreground/50">{tx.status}</p>
@@ -121,10 +121,10 @@ export default function DashboardPage() {
           
           <div className="mt-auto space-y-3 relative z-10">
             <div className="p-3 rounded-lg bg-black/40 border border-white/5 text-sm text-foreground/80 font-mono">
-              "Send 10 USDC to vitalik.eth"
+              &quot;Send 10 USDC to vitalik.eth&quot;
             </div>
             <div className="p-3 rounded-lg bg-black/40 border border-white/5 text-sm text-foreground/80 font-mono">
-              "Mint the early adopter badge"
+              &quot;Mint the early adopter badge&quot;
             </div>
           </div>
         </motion.div>

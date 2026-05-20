@@ -21,6 +21,12 @@ interface Message {
   };
 }
 
+let messageCounter = 1;
+const generateId = () => {
+  messageCounter += 1;
+  return `msg-${messageCounter}`;
+};
+
 export default function AIAssistantPage() {
   const [messages, setMessages] = useState<Message[]>([
     {
@@ -60,7 +66,7 @@ export default function AIAssistantPage() {
   const handleSend = async (text: string) => {
     if (!text.trim()) return;
 
-    const newUserMsg: Message = { id: Date.now().toString(), role: "user", content: text };
+    const newUserMsg: Message = { id: generateId(), role: "user", content: text };
     setMessages((prev) => [...prev, newUserMsg]);
     setInput("");
     setIsTyping(true);
@@ -78,7 +84,7 @@ export default function AIAssistantPage() {
 
       if (!response.ok) {
         setMessages((prev) => [...prev, {
-          id: (Date.now() + 1).toString(),
+          id: generateId(),
           role: "assistant",
           content: `Oops, something went wrong: ${data.error || "Please check your API key in .env.local"}`
         }]);
@@ -92,7 +98,7 @@ export default function AIAssistantPage() {
         // ✅ Block transaction if receiver not found in address book
         if (data.action.type === "Transfer" && data.action.receiverResolved === false) {
           setMessages((prev) => [...prev, {
-            id: (Date.now() + 1).toString(),
+            id: generateId(),
             role: "assistant",
             content: `❌ I couldn't find "${data.action.receiver}" in the address book. Please check the name and try again. Currently registered users: Rahul, Pranay, Anuja, John, Gitcoin.`,
           }]);
@@ -100,7 +106,7 @@ export default function AIAssistantPage() {
         }
 
         setMessages((prev) => [...prev, {
-          id: (Date.now() + 1).toString(),
+          id: generateId(),
           role: "assistant",
           content: isMint 
             ? "Ready to mint your badge. The gas fee is fully subsidized." 
@@ -110,22 +116,26 @@ export default function AIAssistantPage() {
       } else {
         // Fallback for conversational messages or unclear commands
         setMessages((prev) => [...prev, {
-          id: (Date.now() + 1).toString(),
+          id: generateId(),
           role: "assistant",
           content: "I'm ready to help with that. Could you provide a bit more detail about the transaction you want to execute?",
         }]);
       }
-    } catch (error) {
+    } catch {
       setIsTyping(false);
       setMessages((prev) => [...prev, {
-        id: (Date.now() + 1).toString(),
+        id: generateId(),
         role: "assistant",
         content: "Error communicating with the blockchain AI."
       }]);
     }
   };
 
-  const executeAction = (action: any) => {
+  const executeAction = (action: {
+    type: string;
+    amount: string;
+    receiver: string;
+  }) => {
     setModalState({
       isOpen: true,
       action: action.type,
@@ -209,15 +219,75 @@ export default function AIAssistantPage() {
                   </Button>
                 </div>
               )}
-            </div>
+              
+              <div className={`space-y-3 ${msg.role === "user" ? "items-end flex flex-col" : ""}`}>
+                <div
+                  className={`p-4 rounded-2xl ${
+                    msg.role === "user"
+                      ? "bg-primary text-white rounded-tr-sm"
+                      : "glass border border-white/10 text-foreground/90 rounded-tl-sm"
+                  }`}
+                >
+                  <p className="leading-relaxed">{msg.content}</p>
+                </div>
 
-            {msg.role === "user" && (
-              <div className="w-10 h-10 shrink-0 rounded-xl bg-white/10 flex items-center justify-center border border-white/5">
-                <User className="w-5 h-5 text-white" />
+                {action && (
+                  <div className="glass-panel p-4 rounded-xl border border-primary/30 w-[300px]">
+                    <div className="flex justify-between items-center mb-4">
+                      <span className="text-sm font-semibold text-white">{action.type}</span>
+                      <Zap className="w-4 h-4 text-consumer-green" />
+                    </div>
+                    <div className="space-y-2 mb-4">
+                      <div className="flex justify-between text-sm">
+                        <span className="text-foreground/50">Amount:</span>
+                        <span className="text-white font-medium">{action.amount}</span>
+                      </div>
+                      <div className="flex justify-between text-sm items-center">
+                        <span className="text-foreground/50">To:</span>
+                        <div className="flex items-center gap-2">
+                          {action.receiverAvatar && (
+                            <div className="w-5 h-5 rounded-full bg-primary/30 flex items-center justify-center text-[9px] font-bold text-primary">
+                              {action.receiverAvatar}
+                            </div>
+                          )}
+                          <span className="text-white font-medium">{action.receiver}</span>
+                        </div>
+                      </div>
+                      {action.receiverAddress && (
+                        <div className="flex justify-between text-xs">
+                          <span className="text-foreground/50">Wallet:</span>
+                          <span className={`font-mono truncate max-w-[160px] ${
+                            action.receiverResolved ? 'text-consumer-green' : 'text-consumer-orange'
+                          }`}>
+                            {action.receiverAddress}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                    <Button 
+                      variant="primary" 
+                      size="sm" 
+                      className={`w-full ${!action.receiverResolved && action.type === 'Transfer' ? 'opacity-50 cursor-not-allowed' : ''}`}
+                      onClick={() => action.receiverResolved !== false ? executeAction(action) : null}
+                      disabled={action.type === 'Transfer' && action.receiverResolved === false}
+                    >
+                      {action.type === 'Transfer' && action.receiverResolved === false 
+                        ? '❌ Unknown Receiver' 
+                        : 'Review Transaction'
+                      }
+                    </Button>
+                  </div>
+                )}
               </div>
-            )}
-          </motion.div>
-        ))}
+
+              {msg.role === "user" && (
+                <div className="w-10 h-10 shrink-0 rounded-xl bg-white/10 flex items-center justify-center border border-white/5">
+                  <User className="w-5 h-5 text-white" />
+                </div>
+              )}
+            </motion.div>
+          );
+        })}
 
         {isTyping && (
           <motion.div
@@ -282,7 +352,7 @@ export default function AIAssistantPage() {
         receiverAddress={modalState.receiverAddress}
         onSuccess={() => {
           setMessages(prev => [...prev, {
-            id: Date.now().toString(),
+            id: generateId(),
             role: "assistant",
             content: "Transaction executed successfully! The gas fees were completely covered by the Universal Gas Fund."
           }]);
