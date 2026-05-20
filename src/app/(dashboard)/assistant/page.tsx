@@ -14,6 +14,9 @@ interface Message {
     type: string;
     amount: string;
     receiver: string;
+    receiverAddress?: string;
+    receiverAvatar?: string;
+    receiverResolved?: boolean;
   };
 }
 
@@ -50,7 +53,7 @@ export default function AIAssistantPage() {
     scrollToBottom();
   }, [messages, isTyping]);
 
-  const handleSend = (text: string) => {
+  const handleSend = async (text: string) => {
     if (!text.trim()) return;
 
     const newUserMsg: Message = { id: Date.now().toString(), role: "user", content: text };
@@ -58,44 +61,64 @@ export default function AIAssistantPage() {
     setInput("");
     setIsTyping(true);
 
-    // Mock AI response
-    setTimeout(() => {
-      setIsTyping(false);
-      
-      let aiResponse: Message;
+    try {
+      // Call the real OpenAI backend
+      const response = await fetch("/api/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message: text }),
+      });
 
-      if (text.toLowerCase().includes("send") || text.toLowerCase().includes("donate")) {
-        aiResponse = {
+      const data = await response.json();
+      setIsTyping(false);
+
+      if (!response.ok) {
+        setMessages((prev) => [...prev, {
           id: (Date.now() + 1).toString(),
           role: "assistant",
-          content: "I've prepared that transaction for you. Please review and confirm to proceed.",
-          action: {
-            type: "Transfer",
-            amount: text.toLowerCase().includes("10") ? "10.00 MockUSD" : "5.00 MockUSD",
-            receiver: text.toLowerCase().includes("rahul") ? "rahul.eth" : "gitcoin.eth"
-          }
-        };
-      } else if (text.toLowerCase().includes("mint")) {
-        aiResponse = {
+          content: `Oops, something went wrong: ${data.error || "Please check your API key in .env.local"}`
+        }]);
+        return;
+      }
+
+      // Check if AI parsed a valid action
+      if (data.action && data.action.type !== "Unknown") {
+        const isMint = data.action.type === "Mint NFT";
+
+        // ✅ Block transaction if receiver not found in address book
+        if (data.action.type === "Transfer" && data.action.receiverResolved === false) {
+          setMessages((prev) => [...prev, {
+            id: (Date.now() + 1).toString(),
+            role: "assistant",
+            content: `❌ I couldn't find "${data.action.receiver}" in the address book. Please check the name and try again. Currently registered users: Rahul, Pranay, Anuja, John, Gitcoin.`,
+          }]);
+          return;
+        }
+
+        setMessages((prev) => [...prev, {
           id: (Date.now() + 1).toString(),
           role: "assistant",
-          content: "Ready to mint your badge. The gas fee is fully subsidized.",
-          action: {
-            type: "Mint NFT",
-            amount: "1 Badge",
-            receiver: "0x71C...976F (You)"
-          }
-        };
+          content: isMint 
+            ? "Ready to mint your badge. The gas fee is fully subsidized." 
+            : "I've prepared that transaction for you. Please review and confirm to proceed.",
+          action: data.action
+        }]);
       } else {
-         aiResponse = {
+        // Fallback for conversational messages or unclear commands
+        setMessages((prev) => [...prev, {
           id: (Date.now() + 1).toString(),
           role: "assistant",
           content: "I'm ready to help with that. Could you provide a bit more detail about the transaction you want to execute?",
-        };
+        }]);
       }
-
-      setMessages((prev) => [...prev, aiResponse]);
-    }, 1500);
+    } catch (error) {
+      setIsTyping(false);
+      setMessages((prev) => [...prev, {
+        id: (Date.now() + 1).toString(),
+        role: "assistant",
+        content: "Error communicating with the blockchain AI."
+      }]);
+    }
   };
 
   const executeAction = (action: any) => {
@@ -145,18 +168,39 @@ export default function AIAssistantPage() {
                       <span className="text-foreground/50">Amount:</span>
                       <span className="text-white font-medium">{msg.action.amount}</span>
                     </div>
-                    <div className="flex justify-between text-sm">
+                    <div className="flex justify-between text-sm items-center">
                       <span className="text-foreground/50">To:</span>
-                      <span className="text-white font-mono">{msg.action.receiver}</span>
+                      <div className="flex items-center gap-2">
+                        {msg.action.receiverAvatar && (
+                          <div className="w-5 h-5 rounded-full bg-primary/30 flex items-center justify-center text-[9px] font-bold text-primary">
+                            {msg.action.receiverAvatar}
+                          </div>
+                        )}
+                        <span className="text-white font-medium">{msg.action.receiver}</span>
+                      </div>
                     </div>
+                    {msg.action.receiverAddress && (
+                      <div className="flex justify-between text-xs">
+                        <span className="text-foreground/50">Wallet:</span>
+                        <span className={`font-mono truncate max-w-[160px] ${
+                          msg.action.receiverResolved ? 'text-green-400' : 'text-red-400'
+                        }`}>
+                          {msg.action.receiverAddress}
+                        </span>
+                      </div>
+                    )}
                   </div>
                   <Button 
                     variant="primary" 
                     size="sm" 
-                    className="w-full"
-                    onClick={() => executeAction(msg.action)}
+                    className={`w-full ${!msg.action.receiverResolved && msg.action.type === 'Transfer' ? 'opacity-50 cursor-not-allowed' : ''}`}
+                    onClick={() => msg.action.receiverResolved !== false ? executeAction(msg.action) : null}
+                    disabled={msg.action.type === 'Transfer' && msg.action.receiverResolved === false}
                   >
-                    Review Transaction
+                    {msg.action.type === 'Transfer' && msg.action.receiverResolved === false 
+                      ? '❌ Unknown Receiver' 
+                      : 'Review Transaction'
+                    }
                   </Button>
                 </div>
               )}
