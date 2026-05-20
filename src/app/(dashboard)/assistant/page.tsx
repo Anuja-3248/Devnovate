@@ -5,6 +5,7 @@ import { motion } from "framer-motion";
 import { Bot, User, Send, Sparkles, Zap } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { TransactionModal } from "@/components/modals/TransactionModal";
+import { useBalance } from "@/context/BalanceContext";
 
 interface Message {
   id: string;
@@ -31,12 +32,15 @@ export default function AIAssistantPage() {
   const [input, setInput] = useState("");
   const [isTyping, setIsTyping] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  
+  const { deductUGF, deductTotalBalance, addTransaction } = useBalance();
 
   const [modalState, setModalState] = useState({
     isOpen: false,
     action: "",
     amount: "",
-    receiver: ""
+    receiver: "",
+    receiverAddress: ""
   });
 
   const suggestions = [
@@ -126,7 +130,8 @@ export default function AIAssistantPage() {
       isOpen: true,
       action: action.type,
       amount: action.amount,
-      receiver: action.receiver
+      receiver: action.receiver,
+      receiverAddress: action.receiverAddress || ""
     });
   };
 
@@ -194,8 +199,8 @@ export default function AIAssistantPage() {
                     variant="primary" 
                     size="sm" 
                     className={`w-full ${!msg.action.receiverResolved && msg.action.type === 'Transfer' ? 'opacity-50 cursor-not-allowed' : ''}`}
-                    onClick={() => msg.action.receiverResolved !== false ? executeAction(msg.action) : null}
-                    disabled={msg.action.type === 'Transfer' && msg.action.receiverResolved === false}
+                    onClick={() => msg.action?.receiverResolved !== false ? executeAction(msg.action) : null}
+                    disabled={msg.action?.type === 'Transfer' && msg.action?.receiverResolved === false}
                   >
                     {msg.action.type === 'Transfer' && msg.action.receiverResolved === false 
                       ? '❌ Unknown Receiver' 
@@ -274,12 +279,36 @@ export default function AIAssistantPage() {
         action={modalState.action}
         amount={modalState.amount}
         receiver={modalState.receiver}
+        receiverAddress={modalState.receiverAddress}
         onSuccess={() => {
           setMessages(prev => [...prev, {
             id: Date.now().toString(),
             role: "assistant",
             content: "Transaction executed successfully! The gas fees were completely covered by the Universal Gas Fund."
           }]);
+          
+          // Deduct 2.45 from UGF balance for the gas fee
+          deductUGF(2.45);
+
+          if (modalState.action === "Transfer") {
+            const numericAmount = parseFloat(modalState.amount.replace(/[^0-9.]/g, ""));
+            if (!isNaN(numericAmount)) {
+              deductTotalBalance(numericAmount);
+              addTransaction({
+                type: "Sent",
+                amount: `-${numericAmount.toFixed(2)} MockUSD`,
+                address: modalState.receiverAddress || modalState.receiver,
+                status: "Success"
+              });
+            }
+          } else if (modalState.action === "Mint NFT") {
+            addTransaction({
+              type: "Minted",
+              amount: "GhostBadge NFT",
+              address: modalState.receiverAddress || modalState.receiver,
+              status: "Success"
+            });
+          }
         }}
       />
     </div>

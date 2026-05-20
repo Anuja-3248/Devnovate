@@ -5,21 +5,17 @@ import { motion } from "framer-motion";
 import { ArrowUpRight, ArrowDownRight, Wallet, Activity, Award, ArrowRight } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/Button";
-
-const stats = [
-  { name: "Total Balance", value: "$4,250.00", change: "+12.5%", isPositive: true, icon: Wallet },
-  { name: "Gas Saved", value: "$124.50", change: "+4.2%", isPositive: true, icon: Activity },
-  { name: "NFT Badges", value: "12", change: "+2 this week", isPositive: true, icon: Award },
-];
-
-const transactions = [
-  { id: 1, type: "Received", amount: "+50.00 USDC", address: "0x4F1...8A2B", time: "2 hours ago", status: "Success" },
-  { id: 2, type: "Sent", amount: "-10.00 MATIC", address: "0x9D3...1C4E", time: "5 hours ago", status: "Success" },
-  { id: 3, type: "Minted", amount: "Early Adopter NFT", address: "GhostPay System", time: "1 day ago", status: "Success" },
-  { id: 4, type: "Received", amount: "+100.00 USDC", address: "0x2A7...5F9D", time: "2 days ago", status: "Success" },
-];
+import { useBalance } from "@/context/BalanceContext";
 
 export default function DashboardPage() {
+  const { totalBalance, transactions } = useBalance();
+
+  const stats = [
+    { name: "Total Balance", value: `$${totalBalance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, change: "+12.5%", isPositive: true, icon: Wallet },
+    { name: "Gas Saved", value: "$124.50", change: "+4.2%", isPositive: true, icon: Activity },
+    { name: "NFT Badges", value: "12", change: "+2 this week", isPositive: true, icon: Award },
+  ];
+
   return (
     <div className="space-y-8 pb-12">
       <div className="flex justify-between items-end">

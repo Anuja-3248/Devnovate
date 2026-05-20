@@ -3,8 +3,9 @@
 import React, { useState } from "react";
 import { Modal } from "@/components/ui/Modal";
 import { Button } from "@/components/ui/Button";
-import { Zap, CheckCircle, ArrowRight } from "lucide-react";
+import { Zap, CheckCircle, ArrowRight, AlertTriangle } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { sendMockUSD, mintGhostBadge } from "@/lib/web3";
 
 interface TransactionModalProps {
   isOpen: boolean;
@@ -12,26 +13,61 @@ interface TransactionModalProps {
   action: string;
   amount: string;
   receiver: string;
+  receiverAddress?: string;
   onSuccess: () => void;
 }
 
-export function TransactionModal({ isOpen, onClose, action, amount, receiver, onSuccess }: TransactionModalProps) {
-  const [status, setStatus] = useState<"preview" | "processing" | "success">("preview");
+export function TransactionModal({ isOpen, onClose, action, amount, receiver, receiverAddress, onSuccess }: TransactionModalProps) {
+  const [status, setStatus] = useState<"preview" | "processing" | "success" | "error">("preview");
+  const [txHash, setTxHash] = useState<string>("");
+  const [errorMsg, setErrorMsg] = useState<string>("");
 
-  const handleConfirm = () => {
+  const handleConfirm = async () => {
     setStatus("processing");
-    setTimeout(() => {
+    setErrorMsg("");
+
+    try {
+      let hash = "";
+
+      if (action === "Transfer" && receiverAddress) {
+        // Extract just the number from amount (e.g. "5 MockUSD" → "5")
+        const numericAmount = amount.replace(/[^0-9.]/g, "");
+        hash = await sendMockUSD(receiverAddress, numericAmount);
+      } else if (action === "Mint NFT" && receiverAddress) {
+        hash = await mintGhostBadge(receiverAddress);
+      } else {
+        // Fallback: simulate for demo purposes if no address is available
+        await new Promise((resolve) => setTimeout(resolve, 2500));
+        hash = "0x" + Math.random().toString(16).slice(2, 10) + "..." + Math.random().toString(16).slice(2, 6);
+      }
+
+      setTxHash(hash);
       setStatus("success");
       setTimeout(() => {
         onSuccess();
         onClose();
-        setStatus("preview"); // Reset for next time
-      }, 2000);
-    }, 2500);
+        setStatus("preview");
+        setTxHash("");
+      }, 3000);
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : "Transaction failed. Please try again.";
+      console.error("Transaction error:", err);
+      setErrorMsg(errorMessage);
+      setStatus("error");
+    }
+  };
+
+  const handleClose = () => {
+    if (status !== "processing") {
+      setStatus("preview");
+      setTxHash("");
+      setErrorMsg("");
+      onClose();
+    }
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={status === "processing" ? () => {} : onClose} title={status === "preview" ? "Confirm Transaction" : ""}>
+    <Modal isOpen={isOpen} onClose={handleClose} title={status === "preview" ? "Confirm Transaction" : ""}>
       <AnimatePresence mode="wait">
         {status === "preview" && (
           <motion.div
@@ -54,6 +90,12 @@ export function TransactionModal({ isOpen, onClose, action, amount, receiver, on
                 <span className="text-foreground/70 text-sm">Receiver</span>
                 <span className="font-mono text-white text-sm bg-white/5 px-2 py-1 rounded">{receiver}</span>
               </div>
+              {receiverAddress && (
+                <div className="flex justify-between items-center pb-4 border-b border-white/5">
+                  <span className="text-foreground/70 text-sm">Wallet</span>
+                  <span className="font-mono text-green-400 text-xs bg-white/5 px-2 py-1 rounded truncate max-w-[200px]">{receiverAddress}</span>
+                </div>
+              )}
               <div className="flex justify-between items-center">
                 <span className="text-foreground/70 text-sm">Network Fee</span>
                 <div className="flex items-center gap-2">
@@ -66,11 +108,11 @@ export function TransactionModal({ isOpen, onClose, action, amount, receiver, on
             </div>
 
             <div className="flex gap-4">
-              <Button variant="ghost" className="flex-1 border border-white/10" onClick={onClose}>
+              <Button variant="ghost" className="flex-1 border border-white/10" onClick={handleClose}>
                 Cancel
               </Button>
               <Button variant="primary" className="flex-1" onClick={handleConfirm}>
-                Confirm
+                Confirm <ArrowRight className="w-4 h-4 ml-1" />
               </Button>
             </div>
           </motion.div>
@@ -91,8 +133,8 @@ export function TransactionModal({ isOpen, onClose, action, amount, receiver, on
               </div>
             </div>
             <div>
-              <h3 className="text-xl font-bold text-white mb-2">Executing Meta-Transaction</h3>
-              <p className="text-sm text-foreground/70">Broadcasting to network via Universal Gas Fund...</p>
+              <h3 className="text-xl font-bold text-white mb-2">Executing on Blockchain</h3>
+              <p className="text-sm text-foreground/70">Broadcasting to Base Sepolia via Universal Gas Fund...</p>
             </div>
           </motion.div>
         )}
@@ -115,9 +157,33 @@ export function TransactionModal({ isOpen, onClose, action, amount, receiver, on
               <h3 className="text-2xl font-bold text-white mb-2">Transaction Successful!</h3>
               <p className="text-sm text-green-400 font-medium">Gas fees fully subsidized by UGF.</p>
             </div>
-            <div className="text-xs text-foreground/50 font-mono bg-white/5 px-4 py-2 rounded-lg">
-              Hash: 0x8f2d...4a9c
+            <div className="text-xs text-foreground/50 font-mono bg-white/5 px-4 py-2 rounded-lg max-w-full truncate">
+              Hash: {txHash ? `${txHash.slice(0, 10)}...${txHash.slice(-6)}` : "0x8f2d...4a9c"}
             </div>
+          </motion.div>
+        )}
+
+        {status === "error" && (
+          <motion.div
+            key="error"
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="flex flex-col items-center justify-center py-12 space-y-6 text-center"
+          >
+            <motion.div
+              initial={{ scale: 0 }}
+              animate={{ scale: 1 }}
+              transition={{ type: "spring", bounce: 0.5 }}
+            >
+              <AlertTriangle className="w-24 h-24 text-red-400 drop-shadow-[0_0_15px_rgba(248,113,113,0.5)]" />
+            </motion.div>
+            <div>
+              <h3 className="text-2xl font-bold text-white mb-2">Transaction Failed</h3>
+              <p className="text-sm text-red-400 font-medium max-w-xs">{errorMsg}</p>
+            </div>
+            <Button variant="primary" onClick={() => setStatus("preview")}>
+              Try Again
+            </Button>
           </motion.div>
         )}
       </AnimatePresence>
