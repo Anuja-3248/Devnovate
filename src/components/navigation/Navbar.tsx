@@ -2,7 +2,6 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
 import { Button } from "@/components/ui/Button";
 import { Menu, X, Wallet } from "lucide-react";
 import { WalletModal } from "@/components/modals/WalletModal";
@@ -10,7 +9,6 @@ import { WalletModal } from "@/components/modals/WalletModal";
 export function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const [isWalletModalOpen, setIsWalletModalOpen] = useState(false);
-  const pathname = usePathname();
 
   const navLinks = [
     { name: "Features", href: "#features" },
@@ -24,12 +22,14 @@ export function Navbar() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-20">
             {/* Logo */}
-            <div className="flex-shrink-0 flex items-center gap-2">
-              <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-primary to-accent flex items-center justify-center shadow-[0_0_15px_var(--primary-glow)]">
-                <div className="w-3 h-3 bg-white rounded-full" />
+            <div className="flex-shrink-0 flex items-center gap-2 group">
+              <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-consumer-orange via-amber-500 to-consumer-purple flex items-center justify-center shadow-[0_0_20px_rgba(255,92,22,0.4)] border border-white/10 group-hover:scale-105 transition-transform duration-300">
+                <div className="w-3.5 h-3.5 bg-white rounded-full flex items-center justify-center">
+                  <div className="w-1.5 h-1.5 bg-consumer-orange rounded-full" />
+                </div>
               </div>
-              <Link href="/" className="font-bold text-xl tracking-tight text-gradient">
-                GhostPay AI
+              <Link href="/" className="font-bold text-xl tracking-tight text-white group-hover:text-consumer-orange transition-colors">
+                GhostPay <span className="text-consumer-orange font-black">AI</span>
               </Link>
             </div>
 

@@ -2,7 +2,6 @@
 
 import React, { useState } from "react";
 import { Modal } from "@/components/ui/Modal";
-import { Button } from "@/components/ui/Button";
 import { Loader2 } from "lucide-react";
 import { motion } from "framer-motion";
 
