@@ -153,14 +153,20 @@ export default function AIAssistantPage() {
             key={msg.id}
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            className={`flex gap-4 max-w-3xl ${msg.role === "user" ? "ml-auto" : "mr-auto"}`}
+            className={`flex gap-4 max-w-3xl ${msg.role === "user" ? "ml-auto flex-row-reverse" : "mr-auto"}`}
           >
             {msg.role === "assistant" && (
               <div className="w-10 h-10 shrink-0 rounded-xl bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center border border-primary/20 shadow-[0_0_10px_var(--primary-glow)]">
                 <Bot className="w-5 h-5 text-primary" />
               </div>
             )}
-            
+
+            {msg.role === "user" && (
+              <div className="w-10 h-10 shrink-0 rounded-xl bg-white/10 flex items-center justify-center border border-white/5">
+                <User className="w-5 h-5 text-white" />
+              </div>
+            )}
+
             <div className={`space-y-3 ${msg.role === "user" ? "items-end flex flex-col" : ""}`}>
               <div
                 className={`p-4 rounded-2xl ${
@@ -197,38 +203,29 @@ export default function AIAssistantPage() {
                     {msg.action.receiverAddress && (
                       <div className="flex justify-between text-xs">
                         <span className="text-foreground/50">Wallet:</span>
-                        <span className={`font-mono truncate max-w-[160px] ${
-                          msg.action.receiverResolved ? 'text-green-400' : 'text-red-400'
-                        }`}>
+                        <span className={`font-mono truncate max-w-[160px] ${msg.action.receiverResolved ? "text-green-400" : "text-red-400"}`}>
                           {msg.action.receiverAddress}
                         </span>
                       </div>
                     )}
                   </div>
-                  <Button 
-                    variant="primary" 
-                    size="sm" 
-                    className={`w-full ${!msg.action.receiverResolved && msg.action.type === 'Transfer' ? 'opacity-50 cursor-not-allowed' : ''}`}
+                  <Button
+                    variant="primary"
+                    size="sm"
+                    className={`w-full ${!msg.action.receiverResolved && msg.action.type === "Transfer" ? "opacity-50 cursor-not-allowed" : ""}`}
                     onClick={() => msg.action?.receiverResolved !== false ? executeAction(msg.action) : null}
-                    disabled={msg.action?.type === 'Transfer' && msg.action?.receiverResolved === false}
+                    disabled={msg.action?.type === "Transfer" && msg.action?.receiverResolved === false}
                   >
-                    {msg.action.type === 'Transfer' && msg.action.receiverResolved === false 
-                      ? '❌ Unknown Receiver' 
-                      : 'Review Transaction'
+                    {msg.action.type === "Transfer" && msg.action.receiverResolved === false
+                      ? "❌ Unknown Receiver"
+                      : "Review Transaction"
                     }
                   </Button>
                 </div>
               )}
-                          </div>
-
-              {msg.role === "user" && (
-                <div className="w-10 h-10 shrink-0 rounded-xl bg-white/10 flex items-center justify-center border border-white/5">
-                  <User className="w-5 h-5 text-white" />
-                </div>
-              )}
-            </motion.div>
-          );
-        })}
+            </div>
+          </motion.div>
+        ))}
 
         {isTyping && (
           <motion.div
