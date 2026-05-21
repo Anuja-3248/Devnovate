@@ -3,82 +3,105 @@
 import React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, Bot, Award, ArrowRightLeft, User, LogOut } from "lucide-react";
+import { motion } from "framer-motion";
+import { LayoutGrid, Sparkles, BadgeCheck, ArrowRightLeft, CircleUserRound, LogOut } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const menuItems = [
-  { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
-  { name: "AI Assistant", href: "/assistant", icon: Bot },
-  { name: "NFT Badges", href: "/nfts", icon: Award },
-  { name: "Transactions", href: "/dashboard", icon: ArrowRightLeft }, // Mocking to dashboard
-  { name: "Profile", href: "/profile", icon: User },
+  { name: "Dashboard", href: "/dashboard", icon: LayoutGrid },
+  { name: "AI Assistant", href: "/assistant", icon: Sparkles },
+  { name: "NFT Badges", href: "/nfts", icon: BadgeCheck },
+  { name: "Transactions", href: "/transactions", icon: ArrowRightLeft },
+  { name: "Profile", href: "/profile", icon: CircleUserRound },
 ];
 
 export function Sidebar() {
   const pathname = usePathname();
 
   return (
-    <div className="w-64 h-screen hidden md:flex flex-col border-r border-white/5 glass sticky top-0">
-      {/* Logo */}
-      <div className="h-20 flex items-center px-6 border-b border-white/5">
-        <Link href="/" className="flex items-center gap-2 group">
-          <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-consumer-orange via-amber-500 to-consumer-purple flex items-center justify-center shadow-[0_0_15px_var(--primary-glow)] border border-white/10 group-hover:scale-105 transition-transform duration-300">
-            <div className="w-3 h-3 bg-white rounded-full flex items-center justify-center">
-              <div className="w-1.5 h-1.5 bg-consumer-orange rounded-full" />
+    <motion.aside
+      initial={{ x: -56, opacity: 0 }}
+      animate={{ x: 0, opacity: 1 }}
+      transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+      className="relative hidden h-screen min-h-screen w-[260px] flex-col overflow-hidden rounded-[24px] border border-white/10 bg-[#0b0b0f]/95 backdrop-blur-sm shadow-[0_30px_80px_rgba(0,0,0,0.25)] glass md:flex"
+    >
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_left,_rgba(255,107,26,0.08),transparent_34%)] opacity-40" />
+      <div className="pointer-events-none absolute inset-0 bg-grid-pattern opacity-14" />
+      <div className="relative z-10 flex h-full flex-col">
+        <div className="border-b border-white/10 px-6 py-6">
+          <Link href="/" className="flex items-center gap-3">
+            <div className="flex h-12 w-12 items-center justify-center rounded-3xl border border-white/10 bg-white/5">
+              <div className="h-3.5 w-3.5 rounded-full bg-[#ff6b1a]" />
             </div>
-          </div>
-          <span className="font-bold text-xl tracking-tight text-gradient group-hover:text-consumer-orange transition-colors">
-            GhostPay
-          </span>
-        </Link>
-      </div>
-
-      {/* Nav Menu */}
-      <div className="flex-1 py-6 px-4 space-y-2 overflow-y-auto">
-        <div className="text-xs font-semibold text-foreground/50 uppercase tracking-wider mb-4 px-2">
-          Menu
-        </div>
-        {menuItems.map((item) => {
-          const isActive = pathname === item.href;
-          const Icon = item.icon;
-
-          return (
-            <Link
-              key={item.name}
-              href={item.href}
-              className={cn(
-                "flex items-center gap-3 px-3 py-3 rounded-xl transition-all font-medium",
-                isActive
-                  ? "bg-primary/10 text-white shadow-[inset_0_0_10px_var(--primary-glow)] border border-primary/20"
-                  : "text-foreground/70 hover:text-white hover:bg-white/5"
-              )}
-            >
-              <Icon className={cn("w-5 h-5", isActive ? "text-primary" : "text-foreground/50")} />
-              {item.name}
-            </Link>
-          );
-        })}
-      </div>
-
-      {/* User / Bottom */}
-      <div className="p-4 border-t border-white/5">
-        <div className="flex items-center gap-3 px-3 py-2">
-          <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-secondary to-accent p-0.5">
-            <div className="w-full h-full bg-background rounded-full border-2 border-transparent overflow-hidden">
-               <div className="w-full h-full bg-secondary/20 flex items-center justify-center">
-                 <span className="text-lg">😎</span>
-               </div>
+            <div>
+              <p className="text-lg font-semibold text-white">GhostPay</p>
+              <p className="text-[10px] uppercase tracking-[0.3em] text-slate-500">Web3 finance</p>
             </div>
+          </Link>
+        </div>
+
+        <nav className="flex-1 overflow-y-auto px-5 py-6">
+          <div className="mb-4 text-xs font-semibold uppercase tracking-[0.28em] text-slate-500">
+            Menu
           </div>
-          <div className="flex-1 overflow-hidden">
-            <p className="text-sm font-medium text-white truncate">ghostuser.eth</p>
-            <p className="text-xs text-primary truncate">0x71C...976F</p>
+
+          <div className="space-y-2">
+            {menuItems.map((item) => {
+              const isActive = pathname === item.href;
+              const Icon = item.icon;
+
+              return (
+                <Link key={item.name} href={item.href} legacyBehavior>
+                  <motion.a
+                    whileHover={{ x: 4 }}
+                    transition={{ duration: 0.18, ease: "easeOut" }}
+                    className={cn(
+                      "group flex items-center gap-3 rounded-[16px] border px-4 py-3 font-medium transition duration-200",
+                      isActive
+                        ? "border-white/10 bg-white/10 text-white"
+                        : "border-transparent bg-transparent text-slate-400 hover:border-white/10 hover:bg-white/5 hover:text-white"
+                    )}
+                  >
+                    <span className={cn(
+                      "flex h-10 w-10 items-center justify-center rounded-2xl border text-slate-400 transition duration-200",
+                      isActive
+                        ? "border-white/10 bg-white/10 text-[#ff6b1a]"
+                        : "border-white/5 bg-white/5 group-hover:border-white/10 group-hover:bg-white/10 group-hover:text-white"
+                    )}>
+                      <Icon className="h-5 w-5" />
+                    </span>
+                    <span className="text-sm leading-6 tracking-tight">{item.name}</span>
+                  </motion.a>
+                </Link>
+              );
+            })}
           </div>
-          <button className="text-foreground/50 hover:text-white transition-colors">
-            <LogOut className="w-5 h-5" />
-          </button>
+        </nav>
+
+        <div className="border-t border-white/10 px-5 py-5">
+          <motion.button
+            whileHover={{ y: -2 }}
+            transition={{ duration: 0.18, ease: "easeOut" }}
+            className="group w-full rounded-[20px] border border-white/10 bg-white/5 p-4 text-left transition duration-200 hover:bg-white/10"
+          >
+            <div className="flex items-center justify-between gap-3">
+              <div className="flex items-center gap-3">
+                <div className="relative">
+                  <div className="flex h-11 w-11 items-center justify-center rounded-2xl border border-white/10 bg-[#11131a]">
+                    <CircleUserRound className="h-5 w-5 text-white" />
+                  </div>
+                  <span className="absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full bg-[#6bff8f] ring-1 ring-[#0b0b0f]" />
+                </div>
+                <div className="min-w-0">
+                  <p className="truncate text-sm font-medium text-white">ghostuser.eth</p>
+                  <p className="truncate text-xs text-slate-500">0x71C...976F</p>
+                </div>
+              </div>
+              <LogOut className="h-4 w-4 text-slate-400 transition duration-200 group-hover:text-white" />
+            </div>
+          </motion.button>
         </div>
       </div>
-    </div>
+    </motion.aside>
   );
 }
