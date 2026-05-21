@@ -1,13 +1,18 @@
-import { ConnectButton } from "@rainbow-me/rainbowkit";
 "use client";
 
+import { ConnectButton } from "@rainbow-me/rainbowkit";
 import React, { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useAccount, useDisconnect } from "wagmi";
 import { Button } from "@/components/ui/Button";
-import { Menu, X, Wallet } from "lucide-react";
+import { Menu, X, Wallet, LogOut } from "lucide-react";
 
 export function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
+  const router = useRouter();
+  const { address, isConnected } = useAccount();
+  const { disconnect } = useDisconnect();
 
   const navLinks = [
     { name: "Features", href: "#features" },

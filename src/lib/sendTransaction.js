@@ -7,6 +7,14 @@ export async function sendMockUSD(
   contractAddress,
   abi
 ) {
+  if (!contractAddress) {
+    throw new Error("Missing contract address. Set NEXT_PUBLIC_TOKEN_ADDRESS in .env.local.");
+  }
+
+  if (!abi) {
+    throw new Error("Missing contract ABI.");
+  }
+
   const contract = new ethers.Contract(
     contractAddress,
     abi,

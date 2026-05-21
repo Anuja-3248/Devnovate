@@ -2,6 +2,11 @@
   "name": "0no-co-graphqlsp-api",
   "private": true,
   "version": "0.0.0",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start"
+  },
   "main": "../dist/api.js",
   "module": "../dist/api.mjs",
   "types": "../dist/api.d.ts",
@@ -13,5 +18,16 @@
       "require": "../dist/api.js",
       "source": "../src/api.ts"
     }
+  },
+  "dependencies": {
+    "@rainbow-me/rainbowkit": "^2.2.11",
+    "ethers": "^6.16.0",
+    "firebase": "^10.5.0",
+    "firebase-admin": "^13.10.0",
+    "next": "16.2.6",
+    "react": "19.2.6",
+    "react-dom": "19.2.6",
+    "viem": "^2.50.4",
+    "wagmi": "^2.19.5"
   }
 }

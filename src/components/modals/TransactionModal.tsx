@@ -8,6 +8,7 @@ import { useState } from "react";
 import { ethers } from "ethers";
 import { sendMockUSD } from "@/lib/sendTransaction";
 import MockUSDABI from "@/abi/MockUSD.json";
+import { CONTRACT_ADDRESSES } from "@/constants/contracts";
 
 interface TransactionModalProps {
   isOpen: boolean;
@@ -40,12 +41,22 @@ export function TransactionModal({ isOpen, onClose, action, amount, receiver, re
       await provider.send("eth_requestAccounts", []);
 
       const signer = await provider.getSigner();
+      const contractAddress = process.env.NEXT_PUBLIC_MOCK_USD_ADDRESS || CONTRACT_ADDRESSES.MOCK_USD;
+      const recipient = receiverAddress || receiver;
+
+      if (!contractAddress) {
+        throw new Error("Missing MockUSD contract address. Set NEXT_PUBLIC_MOCK_USD_ADDRESS in .env.local or use the default contract address.");
+      }
+
+      if (!recipient) {
+        throw new Error("Missing recipient address for transaction.");
+      }
 
       const tx = await sendMockUSD(
-        receiver,
+        recipient,
         amount,
         signer,
-        process.env.NEXT_PUBLIC_TOKEN_ADDRESS!,
+        contractAddress,
         MockUSDABI
       );
 
