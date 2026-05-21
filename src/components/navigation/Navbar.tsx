@@ -2,13 +2,16 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useAccount, useDisconnect } from "wagmi";
 import { Button } from "@/components/ui/Button";
-import { Menu, X, Wallet } from "lucide-react";
-import { WalletModal } from "@/components/modals/WalletModal";
+import { Menu, X, Wallet, LogOut } from "lucide-react";
 
 export function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
-  const [isWalletModalOpen, setIsWalletModalOpen] = useState(false);
+  const router = useRouter();
+  const { address, isConnected } = useAccount();
+  const { disconnect } = useDisconnect();
 
   const navLinks = [
     { name: "Features", href: "#features" },
@@ -44,10 +47,18 @@ export function Navbar() {
                   {link.name}
                 </Link>
               ))}
-              <Button size="sm" variant="glass" onClick={() => setIsWalletModalOpen(true)} className="gap-2">
-                <Wallet className="w-4 h-4" />
-                Connect Wallet
-              </Button>
+              {isConnected ? (
+                <Button size="sm" variant="glass" onClick={() => disconnect()} className="gap-2 group text-sm">
+                  <Wallet className="w-4 h-4 text-emerald-400" />
+                  <span className="block group-hover:hidden">{address?.slice(0, 6)}...{address?.slice(-4)}</span>
+                  <span className="hidden group-hover:flex items-center gap-1 text-red-400"><LogOut className="w-4 h-4"/> Disconnect</span>
+                </Button>
+              ) : (
+                <Button size="sm" variant="glass" onClick={() => router.push('/login')} className="gap-2">
+                  <Wallet className="w-4 h-4" />
+                  Connect Wallet
+                </Button>
+              )}
             </div>
 
             {/* Mobile menu button */}
@@ -75,15 +86,20 @@ export function Navbar() {
                 {link.name}
               </Link>
             ))}
-            <Button className="w-full justify-center gap-2" variant="primary" onClick={() => setIsWalletModalOpen(true)}>
-              <Wallet className="w-4 h-4" />
-              Connect Wallet
-            </Button>
+            {isConnected ? (
+              <Button className="w-full justify-center gap-2" variant="primary" onClick={() => disconnect()}>
+                <LogOut className="w-4 h-4" />
+                Disconnect ({address?.slice(0, 6)}...{address?.slice(-4)})
+              </Button>
+            ) : (
+              <Button className="w-full justify-center gap-2" variant="primary" onClick={() => router.push('/login')}>
+                <Wallet className="w-4 h-4" />
+                Connect Wallet
+              </Button>
+            )}
           </div>
         )}
       </nav>
-
-      <WalletModal isOpen={isWalletModalOpen} onClose={() => setIsWalletModalOpen(false)} />
     </>
   );
 }

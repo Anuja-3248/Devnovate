@@ -1,314 +1,246 @@
 "use client";
 
-import React, { useRef } from "react";
-import { motion, useScroll, useSpring } from "framer-motion";
-import Link from "next/link";
-import { 
-  Bot, 
-  Zap, 
-  Award, 
-  LayoutDashboard, 
-  Eye, 
-  ArrowRight, 
-  Play, 
-  ChevronRight, 
-  Sparkles,
-  ShieldCheck,
-  Compass
-} from "lucide-react";
+import React, { useEffect, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
+import { Wallet, ChevronRight, CheckCircle } from "lucide-react";
+import styles from "./page.module.css";
 
-import { Navbar } from "@/components/navigation/Navbar";
-import { Button } from "@/components/ui/Button";
-import { BackgroundParticles } from "@/components/home/BackgroundParticles";
-import { ProblemSection } from "@/components/home/ProblemSection";
-import { AIDemoSection } from "@/components/home/AIDemoSection";
-import { HowItWorks } from "@/components/home/HowItWorks";
+const wallets = [
+  {
+    id: "metamask",
+    name: "MetaMask",
+    description: "Browser extension wallet",
+    icon: (
+      <svg width="28" height="28" viewBox="0 0 318 318" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M274.1 35.5L162.3 118.6l20.1-47.3L274.1 35.5z" fill="#E2761B" stroke="#E2761B" strokeLinecap="round" strokeLinejoin="round"/>
+        <path d="M44.4 35.5l110.9 83.9-19.1-47.6L44.4 35.5z" fill="#E4761B" stroke="#E4761B" strokeLinecap="round" strokeLinejoin="round"/>
+        <path d="M238.3 206.8l-29.8 45.7 63.8 17.6 18.4-62.1-52.4-1.2z" fill="#E4761B" stroke="#E4761B" strokeLinecap="round" strokeLinejoin="round"/>
+        <path d="M27.9 208l18.4 62.1 63.6-17.6-29.8-45.7-52.2 1.2z" fill="#E4761B" stroke="#E4761B" strokeLinecap="round" strokeLinejoin="round"/>
+        <path d="M106.2 138.2l-18 27.2 64.1 2.8-2.3-68.7-43.8 38.7z" fill="#E4761B" stroke="#E4761B" strokeLinecap="round" strokeLinejoin="round"/>
+        <path d="M212.3 138.2l-44.4-39.5-1.5 69.5 63.9-2.8-18-27.2z" fill="#E4761B" stroke="#E4761B" strokeLinecap="round" strokeLinejoin="round"/>
+        <path d="M109.9 252.5l38.6-18.7-33.3-26-5.3 44.7z" fill="#E4761B" stroke="#E4761B" strokeLinecap="round" strokeLinejoin="round"/>
+        <path d="M170 233.8l38.4 18.7-5.1-44.7-33.3 26z" fill="#E4761B" stroke="#E4761B" strokeLinecap="round" strokeLinejoin="round"/>
+      </svg>
+    ),
+    color: "#f6851b",
+  },
+  {
+    id: "walletconnect",
+    name: "WalletConnect",
+    description: "Connect any mobile wallet",
+    icon: (
+      <svg width="28" height="28" viewBox="0 0 300 185" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M61.4 36.7C112.9-11.6 196.7-11.6 248.2 36.7L254 42.3c2.7 2.5 2.7 6.7 0 9.3L233.5 71.2c-1.3 1.3-3.5 1.3-4.8 0l-8-7.7C184.3 30.5 115.2 30.5 78.9 63.5l-8.5 8.2c-1.3 1.3-3.5 1.3-4.8 0L44.9 52.1c-2.7-2.5-2.7-6.7 0-9.3L61.4 36.7zM291.2 78.1l18.4 17.7c2.7 2.5 2.7 6.7 0 9.3L225.2 183c-2.7 2.5-7 2.5-9.6 0L155 124.5c-.7-.6-1.7-.6-2.4 0l-60.6 58.5c-2.7 2.5-7 2.5-9.6 0L.4 105.1c-2.7-2.5-2.7-6.7 0-9.3L18.8 78.1c2.7-2.5 7-2.5 9.6 0l60.7 58.5c.7.6 1.7.6 2.4 0l60.6-58.5c2.7-2.5 7-2.5 9.6 0l60.7 58.5c.7.6 1.7.6 2.4 0l60.6-58.5c2.7-2.5 7-2.5 9.6 0z" fill="#3B99FC"/>
+      </svg>
+    ),
+    color: "#3b99fc",
+  },
+  {
+    id: "coinbase",
+    name: "Coinbase Wallet",
+    description: "Your key to the open web",
+    icon: (
+      <svg width="28" height="28" viewBox="0 0 1024 1024" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect width="1024" height="1024" rx="220" fill="#0052FF"/>
+        <path fillRule="evenodd" clipRule="evenodd" d="M512 692C396.9 692 303 598.1 303 483S396.9 274 512 274s209 93.9 209 209c0 115.1-93.9 209-209 209zm0-282c-40.3 0-73 32.7-73 73s32.7 73 73 73 73-32.7 73-73-32.7-73-73-73z" fill="white"/>
+      </svg>
+    ),
+    color: "#0052ff",
+  },
+];
 
-export default function Home() {
-  const pageRef = useRef<HTMLDivElement | null>(null);
+type Phase = "idle" | "connecting" | "success";
 
-  // Scroll Progress Indicator
-  const { scrollYProgress } = useScroll();
-  const scaleX = useSpring(scrollYProgress, {
-    stiffness: 100,
-    damping: 30,
-    restDelta: 0.001
-  });
+export default function LoginPage() {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const router = useRouter();
+  const [phase, setPhase] = useState<Phase>("idle");
+  const [selectedWallet, setSelectedWallet] = useState<string>("");
+
+  // Animated particle background
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    let animId: number;
+
+    interface ParticleData {
+      x: number; y: number; vx: number; vy: number;
+      size: number; color: string;
+    }
+
+    let particles: ParticleData[] = [];
+
+    const resize = () => {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+      particles = Array.from({ length: 65 }, () => ({
+        x: Math.random() * canvas.width,
+        y: Math.random() * canvas.height,
+        vx: (Math.random() - 0.5) * 0.45,
+        vy: (Math.random() - 0.5) * 0.45,
+        size: Math.random() * 2 + 0.5,
+        color: Math.random() > 0.5 ? "rgba(77,184,255,0.7)" : "rgba(169,128,255,0.7)",
+      }));
+    };
+
+    const draw = () => {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      particles.forEach((p) => {
+        p.x += p.vx; p.y += p.vy;
+        if (p.x < 0 || p.x > canvas.width) p.vx *= -1;
+        if (p.y < 0 || p.y > canvas.height) p.vy *= -1;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+        ctx.fillStyle = p.color;
+        ctx.fill();
+      });
+      for (let i = 0; i < particles.length; i++) {
+        for (let j = i + 1; j < particles.length; j++) {
+          const dx = particles[i].x - particles[j].x;
+          const dy = particles[i].y - particles[j].y;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+          if (dist < 150) {
+            ctx.beginPath();
+            ctx.moveTo(particles[i].x, particles[i].y);
+            ctx.lineTo(particles[j].x, particles[j].y);
+            ctx.strokeStyle = `rgba(169,128,255,${(1 - dist / 150) * 0.18})`;
+            ctx.lineWidth = 1;
+            ctx.stroke();
+          }
+        }
+      }
+      animId = requestAnimationFrame(draw);
+    };
+
+    window.addEventListener("resize", resize);
+    resize();
+    draw();
+    return () => { window.removeEventListener("resize", resize); cancelAnimationFrame(animId); };
+  }, []);
+
+  const handleConnect = (wallet: typeof wallets[0]) => {
+    if (phase !== "idle") return;
+    setSelectedWallet(wallet.name);
+    setPhase("connecting");
+
+    // Simulate wallet connection (2s) then show success (1s) then redirect
+    setTimeout(() => {
+      setPhase("success");
+      setTimeout(() => {
+        router.push("/home");
+      }, 1200);
+    }, 2000);
+  };
 
   return (
-    <div ref={pageRef} className="min-h-screen bg-[#030307] text-foreground relative overflow-hidden bg-grid-pattern selection:bg-primary/30 selection:text-white">
-      
-      {/* Scroll progress bar */}
-      <motion.div 
-        style={{ scaleX }}
-        className="fixed top-0 left-0 right-0 h-1 bg-gradient-to-r from-primary via-accent to-purple-500 z-50 transform-origin-0"
-      />
+    <div className={styles.container}>
+      <canvas ref={canvasRef} className={styles.canvasBackground} />
+      <div className={styles.glowTop} />
+      <div className={styles.glowBottom} />
 
-      {/* Floating Constellation Particles */}
-      <BackgroundParticles />
+      <header className={styles.header}>
+        <h1 className={styles.logo}>KRYPTOS</h1>
+        <nav className={styles.nav}>
+          <a href="#" className={styles.navLink}>Support</a>
+          <a href="#" className={styles.navLink}>Docs</a>
+        </nav>
+      </header>
 
-      {/* Ambient background glows */}
-      <div className="absolute top-0 left-1/4 w-[500px] h-[500px] bg-primary/10 rounded-full blur-[160px] pointer-events-none animate-pulse-slow" />
-      <div className="absolute top-[20%] right-1/4 w-[400px] h-[400px] bg-accent/10 rounded-full blur-[140px] pointer-events-none" />
-      <div className="absolute bottom-[20%] left-10 w-[600px] h-[600px] bg-purple-900/10 rounded-full blur-[180px] pointer-events-none" />
+      <main className={styles.main}>
+        <div className={styles.card}>
 
-      {/* Header Navigation */}
-      <Navbar />
+          {/* Icon */}
+          <div className={styles.iconWrapper}>
+            {phase === "success" ? (
+              <CheckCircle size={28} color="#4ade80" />
+            ) : (
+              <Wallet size={28} />
+            )}
+          </div>
 
-      {/* 1. Hero Section */}
-      <section className="relative min-h-screen flex flex-col items-center justify-center pt-32 pb-16 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto text-center z-10">
-        
-        {/* Glow pill tag */}
-        <motion.div 
-          initial={{ opacity: 0, y: 15 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8 }}
-          className="inline-flex items-center gap-2 px-4 py-2 rounded-full glass border border-primary/20 bg-primary/5 mb-8 hover:border-primary/45 transition-colors cursor-pointer group"
-        >
-          <Sparkles className="w-4 h-4 text-primary animate-pulse" />
-          <span className="text-xs font-semibold text-foreground/80 tracking-wide uppercase flex items-center gap-1">
-            Now Live: Gasless Transactions V1.0 <ChevronRight className="w-3.5 h-3.5 text-foreground/40 group-hover:translate-x-0.5 transition-transform" />
-          </span>
-        </motion.div>
-        
-        {/* Heading */}
-        <motion.h1 
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.1 }}
-          className="text-6xl sm:text-7xl md:text-8xl font-black text-white tracking-tight leading-none mb-6 uppercase"
-        >
-          GhostPay <span className="text-gradient font-black">AI</span>
-        </motion.h1>
-        
-        {/* Subheading */}
-        <motion.p 
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.2 }}
-          className="text-xl md:text-2xl text-foreground/70 max-w-3xl mb-12 leading-relaxed font-medium"
-        >
-          ChatGPT for Blockchain Transactions. Command your wallet in plain English while the Universal Gas Fund makes gas fees completely invisible.
-        </motion.p>
+          {/* Title */}
+          {phase === "idle" && (
+            <>
+              <h2 className={styles.title}>Connect Your Wallet</h2>
+              <p className={styles.subtitle}>
+                Choose your preferred wallet to access the decentralized web.
+              </p>
+            </>
+          )}
+          {phase === "connecting" && (
+            <>
+              <h2 className={styles.title}>Connecting…</h2>
+              <p className={styles.subtitle}>
+                Opening {selectedWallet}. Please approve the connection.
+              </p>
+            </>
+          )}
+          {phase === "success" && (
+            <>
+              <h2 className={styles.title} style={{ color: "#4ade80" }}>Connected!</h2>
+              <p className={styles.subtitle}>
+                Wallet connected successfully. Redirecting…
+              </p>
+            </>
+          )}
 
-        {/* CTA Buttons */}
-        <motion.div 
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.3 }}
-          className="flex flex-col sm:flex-row gap-4 items-center justify-center w-full max-w-md mx-auto"
-        >
-          <Link href="/dashboard" className="w-full sm:w-auto">
-            <Button size="lg" className="w-full sm:w-auto gap-2 shadow-[0_0_30px_var(--primary-glow)] hover:shadow-[0_0_40px_var(--primary-glow)] transition-all">
-              Launch App <ArrowRight className="w-5 h-5" />
-            </Button>
-          </Link>
-          <Button variant="glass" size="lg" className="w-full sm:w-auto gap-2 border-white/10 hover:bg-white/5 transition-colors">
-            <Play className="w-5 h-5 fill-white/10 text-foreground" /> Watch Demo
-          </Button>
-        </motion.div>
-
-        {/* Hero Product Mockup / Showcase */}
-        <motion.div 
-          initial={{ opacity: 0, scale: 0.95, y: 40 }}
-          animate={{ opacity: 1, scale: 1, y: 0 }}
-          transition={{ duration: 1, delay: 0.4 }}
-          className="mt-20 w-full max-w-5xl relative animate-float"
-        >
-          {/* Inner Glow ring */}
-          <div className="absolute inset-0 bg-gradient-to-t from-primary/10 to-accent/5 rounded-3xl blur-2xl -z-10" />
-
-          <div className="glass-panel p-2 rounded-3xl border border-white/10 shadow-[0_30px_80px_rgba(0,0,0,0.8)] overflow-hidden">
-            <div className="bg-black/80 w-full rounded-2xl p-6 md:p-8 flex flex-col md:flex-row items-center justify-between gap-8 border border-white/5">
-              
-              <div className="text-left space-y-6 md:w-1/2">
-                <div className="w-12 h-12 rounded-xl bg-primary/10 border border-primary/25 flex items-center justify-center">
-                  <Bot className="w-6 h-6 text-primary" />
-                </div>
-                <h3 className="text-2xl font-bold text-white leading-tight">
-                  Perform secure payments without holding native tokens.
-                </h3>
-                <p className="text-foreground/60 text-sm leading-relaxed">
-                  No gas limits, no failed transaction anxiety. The platform acts as a smart layer between you and multi-chain networks. Just say the word.
-                </p>
-                <div className="flex gap-4 items-center">
-                  <div className="flex items-center gap-1.5 text-xs text-emerald-400 font-semibold bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-1 rounded-full">
-                    <ShieldCheck className="w-3.5 h-3.5" /> SECURE AUDITED
+          {/* Wallet Buttons */}
+          {phase === "idle" && (
+            <div className={styles.walletList}>
+              {wallets.map((wallet) => (
+                <button
+                  key={wallet.id}
+                  className={styles.walletBtn}
+                  onClick={() => handleConnect(wallet)}
+                >
+                  <div className={styles.walletIcon}>{wallet.icon}</div>
+                  <div className={styles.walletInfo}>
+                    <span className={styles.walletName}>{wallet.name}</span>
+                    <span className={styles.walletDesc}>{wallet.description}</span>
                   </div>
-                  <div className="flex items-center gap-1.5 text-xs text-accent font-semibold bg-accent/10 border border-accent/20 px-2.5 py-1 rounded-full">
-                    <Zap className="w-3.5 h-3.5" /> GASLESS UGF
-                  </div>
-                </div>
-              </div>
-
-              {/* Mockup Preview Panel */}
-              <div className="w-full md:w-1/2 glass border border-white/5 p-5 rounded-xl space-y-4">
-                <div className="flex items-center justify-between text-xs text-foreground/40 pb-3 border-b border-white/5">
-                  <span className="font-mono">GHOSTPAY_AI_AGENT v1.0</span>
-                  <span className="text-accent">ONLINE</span>
-                </div>
-
-                <div className="space-y-3">
-                  <div className="flex justify-end">
-                    <div className="bg-primary/25 border border-primary/30 text-xs text-white p-3 rounded-xl rounded-tr-none font-medium">
-                      &quot;Send 10 MockUSD to Alice for coffee&quot;
-                    </div>
-                  </div>
-
-                  <div className="flex justify-start">
-                    <div className="bg-white/5 border border-white/5 text-xs text-foreground/80 p-3 rounded-xl rounded-tl-none text-left space-y-2 max-w-[85%]">
-                      <p>✨ Resolving transfer... preview ready:</p>
-                      <div className="bg-black/60 p-2 rounded-lg border border-white/5 text-[10px] space-y-1 font-mono">
-                        <p className="text-foreground/50">TO: <span className="text-white">Alice (0x7d...a9e)</span></p>
-                        <p className="text-foreground/50">VALUE: <span className="text-emerald-400 font-bold">10.00 MockUSD</span></p>
-                        <p className="text-foreground/50">GAS: <span className="text-primary line-through">$0.18</span> <span className="text-accent font-bold">FREE (Sponsored)</span></p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                <button className="w-full py-2.5 rounded-lg bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90 transition-all font-bold text-xs text-white shadow-lg shadow-primary/20">
-                  Approve Transaction
+                  <ChevronRight size={20} className={styles.arrowIcon} />
                 </button>
-              </div>
-
+              ))}
             </div>
-          </div>
-        </motion.div>
-      </section>
+          )}
 
-      {/* 2. Problem Section (Sticky Scroll Storytelling) */}
-      <ProblemSection />
+          {/* Spinner for connecting */}
+          {phase === "connecting" && (
+            <div className={styles.spinnerWrap}>
+              <div className={styles.spinner} />
+              <p className={styles.spinnerLabel}>Awaiting approval…</p>
+            </div>
+          )}
 
-      {/* 3. AI Demo Section (Animated Chat Simulator) */}
-      <AIDemoSection />
+          {/* Success check */}
+          {phase === "success" && (
+            <div className={styles.successWrap}>
+              <div className={styles.successPulse} />
+            </div>
+          )}
 
-      {/* 4. Features Section */}
-      <section id="features" className="py-24 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto w-full relative z-10">
-        <div className="text-center mb-20 space-y-4">
-          <h2 className="text-3xl md:text-5xl font-extrabold text-white">Advanced Platform Features</h2>
-          <p className="text-lg text-foreground/60 max-w-xl mx-auto">
-            A comprehensive suite of tools built to deliver the ultimate Web3 transaction experience.
-          </p>
+          {phase === "idle" && (
+            <p className={styles.footerLink}>
+              New to Web3?{" "}
+              <a href="https://ethereum.org/en/wallets/" target="_blank" rel="noopener noreferrer">
+                Learn more about wallets
+              </a>
+            </p>
+          )}
         </div>
+      </main>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          
-          {/* Card 1: AI Transactions */}
-          <FeatureCard 
-            title="AI Transactions" 
-            desc="Enter standard English prompts to execute complex ERC-20 transfers, contract approvals, or multi-sig routing." 
-            icon={<Bot className="w-6 h-6 text-primary" />} 
-          />
-
-          {/* Card 2: Gasless Payments */}
-          <FeatureCard 
-            title="Gasless Payments" 
-            desc="Say goodbye to buying native chain gas tokens. The Universal Gas Fund handles 100% of network fees seamlessly." 
-            icon={<Zap className="w-6 h-6 text-accent" />} 
-          />
-
-          {/* Card 3: NFT Badge Minting */}
-          <FeatureCard 
-            title="NFT Badge Minting" 
-            desc="Mint achievement certificates, event logs, and participation badges gaslessly. Retain full custody of your achievements." 
-            icon={<Award className="w-6 h-6 text-purple-400" />} 
-          />
-
-          {/* Card 4: Activity Dashboard */}
-          <FeatureCard 
-            title="Activity Dashboard" 
-            desc="Review historic AI executions, gas credits sponsored, pending transactions, and address book directories." 
-            icon={<LayoutDashboard className="w-6 h-6 text-cyan-400" />} 
-          />
-
-          {/* Card 5: Smart Transaction Preview */}
-          <FeatureCard 
-            title="Smart Transaction Preview" 
-            desc="See exactly what will happen before committing your keys. Decipher raw hex parameters into human-readable details." 
-            icon={<Eye className="w-6 h-6 text-blue-400" />} 
-          />
-
-          {/* Card 6: Cross-Chain Explorer */}
-          <FeatureCard 
-            title="Cross-Chain Routing" 
-            desc="Deploy transactions across Ethereum, Polygon, Arbitrum, and Base without switching networks in your wallet." 
-            icon={<Compass className="w-6 h-6 text-indigo-400" />} 
-          />
-
-        </div>
-      </section>
-
-      {/* 5. How It Works Section */}
-      <HowItWorks />
-
-      {/* 6. Final CTA Section */}
-      <section className="py-32 px-4 sm:px-6 lg:px-8 max-w-5xl mx-auto w-full relative text-center z-10">
-        {/* Glow behind final CTA */}
-        <div className="absolute inset-0 bg-gradient-to-tr from-primary/10 to-accent/10 rounded-3xl blur-3xl -z-10 animate-pulse-slow" />
-        
-        <div className="glass-panel p-12 md:p-20 rounded-3xl border border-white/10 shadow-[0_20px_50px_rgba(0,0,0,0.5)] space-y-8 relative overflow-hidden">
-          <div className="absolute top-[-50%] left-[-50%] w-[200%] h-[200%] bg-[radial-gradient(ellipse_at_center,rgba(255,92,22,0.08),transparent_50%)] pointer-events-none" />
-          
-          <h2 className="text-4xl md:text-6xl font-extrabold text-white tracking-tight leading-none max-w-3xl mx-auto">
-            Web3 Should Feel <br /><span className="text-gradient">Invisible</span>
-          </h2>
-          
-          <p className="text-lg text-foreground/60 max-w-xl mx-auto leading-relaxed">
-            Join the revolution of conversational, gasless blockchain interactions. Try the GhostPay AI platform now in our sandbox.
-          </p>
-
-          <div className="pt-4">
-            <Link href="/dashboard">
-              <Button size="lg" className="px-8 shadow-[0_0_20px_var(--primary-glow)] hover:scale-105 transition-transform">
-                Try GhostPay AI <ArrowRight className="w-5 h-5 ml-2" />
-              </Button>
-            </Link>
-          </div>
-        </div>
-      </section>
-
-      {/* Footer */}
-      <footer className="border-t border-white/5 py-12 mt-12 bg-black/40 z-10 relative">
-        <div className="max-w-7xl mx-auto px-4 text-center md:flex md:items-center md:justify-between text-foreground/40 text-xs">
-          <p className="mb-4 md:mb-0">© 2026 GhostPay AI. All rights reserved. Designed for Next-Gen Web3 UX.</p>
-          <div className="flex justify-center space-x-6">
-            <a href="#features" className="hover:text-white transition-colors">Features</a>
-            <a href="#how-it-works" className="hover:text-white transition-colors">Process</a>
-            <Link href="/dashboard" className="hover:text-white transition-colors">Dashboard</Link>
-            <a href="#" className="hover:text-white transition-colors">GitHub</a>
-          </div>
-        </div>
+      <footer className={styles.footer}>
+        <div className={styles.copyright}>© 2024 KRYPTOS DECENTRALIZED</div>
+        <nav className={styles.footerNav}>
+          <a href="#" className={styles.footerNavLink}>Privacy Policy</a>
+          <a href="#" className={styles.footerNavLink}>Terms of Service</a>
+          <a href="#" className={styles.footerNavLink}>Security</a>
+        </nav>
       </footer>
-
     </div>
-  );
-}
-
-// Local reusable Feature Card
-function FeatureCard({ title, desc, icon }: { title: string; desc: string; icon: React.ReactNode }) {
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: "-50px" }}
-      whileHover={{ y: -6 }}
-      transition={{ duration: 0.5 }}
-      className="group relative glass-panel p-8 rounded-2xl overflow-hidden border border-white/5 text-left hover:border-white/10 hover:shadow-[0_10px_30px_rgba(0,0,0,0.5)] transition-all duration-300"
-    >
-      <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-accent/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500 -z-10" />
-      
-      <div className="space-y-5">
-        <div className="w-12 h-12 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
-          {icon}
-        </div>
-        
-        <h3 className="text-xl font-bold text-white group-hover:text-white/95 transition-colors">{title}</h3>
-        <p className="text-sm text-foreground/60 leading-relaxed">{desc}</p>
-      </div>
-
-      {/* Decorative hover line */}
-      <div className="absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-primary/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-    </motion.div>
   );
 }
