@@ -17,7 +17,7 @@ import {
   Compass
 } from "lucide-react";
 import { useAccount } from "wagmi";
-import Spline from '@splinetool/react-spline';
+import { BlockchainBackground } from "@/components/home/BlockchainBackground";
 
 import { Navbar } from "@/components/navigation/Navbar";
 import { Button } from "@/components/ui/Button";
@@ -60,13 +60,13 @@ export default function Home() {
 
       {/* 1. Hero Section */}
       <section className="relative h-screen w-full flex items-center justify-center overflow-hidden z-10 pt-20">
-        {/* Spline 3D Background */}
+        {/* Animated Blockchain Chain Background */}
         <div className="absolute inset-0 z-0">
-          <Spline scene="https://prod.spline.design/6Wq1Q7YGyM-iab9i/scene.splinecode" />
+          <BlockchainBackground />
         </div>
 
-        {/* Overlay to ensure text readability */}
-        <div className="absolute inset-0 bg-black/40 z-0 pointer-events-none" />
+        {/* Dark overlay for text readability */}
+        <div className="absolute inset-0 bg-black/50 z-0 pointer-events-none" />
         
         {/* Centered Text */}
         <div className="relative z-10 flex flex-col items-center justify-center text-center px-4 max-w-4xl mx-auto pointer-events-none">
