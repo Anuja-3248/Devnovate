@@ -3,7 +3,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Wallet, ChevronRight, CheckCircle } from "lucide-react";
-import styles from "./page.module.css";
+import styles from "../page.module.css";
 
 const wallets = [
   {
@@ -42,7 +42,7 @@ const wallets = [
     icon: (
       <svg width="28" height="28" viewBox="0 0 1024 1024" fill="none" xmlns="http://www.w3.org/2000/svg">
         <rect width="1024" height="1024" rx="220" fill="#0052FF"/>
-        <path fillRule="evenodd" clipRule="evenodd" d="M512 692C396.9 692 303 598.1 303 483S396.9 274 512 274s209 93.9 209 209c0 115.1-93.9 209-209 209zm0-282c-40.3 0-73 32.7-73 73s32.7 73 73 73 73-32.7 73-73-32.7-73-73-73z" fill="white"/>
+        <path fillRule="evenodd" clipRule="evenodd" d="M512 692C396.9 692 303 598.1 303 483S396.9 274 512 274s209 93.9 209 209c0 115.1-93.9 209-209 209zm0-282c-40.3 0-73 32.7 73 73s32.7 73 73 73 73-32.7 73-73-32.7-73-73-73z" fill="white"/>
       </svg>
     ),
     color: "#0052ff",
@@ -66,12 +66,8 @@ export default function LoginPage() {
     let animId: number;
 
     interface ParticleData {
-      x: number;
-      y: number;
-      vx: number;
-      vy: number;
-      size: number;
-      color: string;
+      x: number; y: number; vx: number; vy: number;
+      size: number; color: string;
     }
 
     let particles: ParticleData[] = [];
@@ -92,8 +88,7 @@ export default function LoginPage() {
     const draw = () => {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       particles.forEach((p) => {
-        p.x += p.vx;
-        p.y += p.vy;
+        p.x += p.vx; p.y += p.vy;
         if (p.x < 0 || p.x > canvas.width) p.vx *= -1;
         if (p.y < 0 || p.y > canvas.height) p.vy *= -1;
         ctx.beginPath();
@@ -122,10 +117,7 @@ export default function LoginPage() {
     window.addEventListener("resize", resize);
     resize();
     draw();
-    return () => {
-      window.removeEventListener("resize", resize);
-      cancelAnimationFrame(animId);
-    };
+    return () => { window.removeEventListener("resize", resize); cancelAnimationFrame(animId); };
   }, []);
 
   const handleConnect = (wallet: typeof wallets[0]) => {
@@ -136,7 +128,7 @@ export default function LoginPage() {
     setTimeout(() => {
       setPhase("success");
       setTimeout(() => {
-        router.push("/home");
+        router.push("/");
       }, 1200);
     }, 2000);
   };
@@ -217,10 +209,30 @@ export default function LoginPage() {
           )}
 
           {phase === "success" && (
-            <div className={styles.successWrap} />
+            <div className={styles.successWrap}>
+              <div className={styles.successPulse} />
+            </div>
+          )}
+
+          {phase === "idle" && (
+            <p className={styles.footerLink}>
+              New to Web3?{" "}
+              <a href="https://ethereum.org/en/wallets/" target="_blank" rel="noopener noreferrer">
+                Learn more about wallets
+              </a>
+            </p>
           )}
         </div>
       </main>
+
+      <footer className={styles.footer}>
+        <div className={styles.copyright}>© 2024 KRYPTOS DECENTRALIZED</div>
+        <nav className={styles.footerNav}>
+          <a href="#" className={styles.footerNavLink}>Privacy Policy</a>
+          <a href="#" className={styles.footerNavLink}>Terms of Service</a>
+          <a href="#" className={styles.footerNavLink}>Security</a>
+        </nav>
+      </footer>
     </div>
   );
 }

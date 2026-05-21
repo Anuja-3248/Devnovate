@@ -3,7 +3,9 @@
 import React, { useState } from "react";
 import { Sidebar } from "@/components/navigation/Sidebar";
 import { Bell, Zap } from "lucide-react";
-import { BalanceProvider, useBalance } from "@/context/BalanceContext";
+import { BalanceProvider } from "@/context/BalanceContext";
+import { useAccount, useBalance as useWagmiBalance } from "wagmi";
+import { baseSepolia } from "wagmi/chains";
 import { usePathname } from "next/navigation";
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
@@ -15,7 +17,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 }
 
 function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
-  const { ugfBalance } = useBalance();
+  const { address } = useAccount();
+  const { data: sepoliaBalance } = useWagmiBalance({ address, chainId: baseSepolia.id });
+
   return (
     <div className="flex h-screen overflow-hidden bg-background">
       {/* Background ambient glow */}
@@ -39,8 +43,10 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
                 <Zap className="w-4 h-4 text-white" />
               </div>
               <div className="flex flex-col">
-                <span className="text-[10px] text-foreground/50 font-medium uppercase tracking-wider">UGF Balance</span>
-                <span className="text-sm font-bold text-white">{ugfBalance.toFixed(2)} MATIC</span>
+                <span className="text-[10px] text-foreground/50 font-medium uppercase tracking-wider">Sepolia ETH</span>
+                <span className="text-sm font-bold text-white">
+                  {sepoliaBalance?.formatted ? Number(sepoliaBalance.formatted).toFixed(4) : "0.0000"} {sepoliaBalance?.symbol ?? "ETH"}
+                </span>
               </div>
             </div>
            </div>

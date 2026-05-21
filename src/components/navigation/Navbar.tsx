@@ -76,17 +76,7 @@ export function Navbar() {
                 {link.name}
               </Link>
             ))}
-            {isConnected ? (
-              <Button className="w-full justify-center gap-2" variant="primary" onClick={() => disconnect()}>
-                <LogOut className="w-4 h-4" />
-                Disconnect ({address?.slice(0, 6)}...{address?.slice(-4)})
-              </Button>
-            ) : (
-              <Button className="w-full justify-center gap-2" variant="primary" onClick={() => router.push('/login')}>
-                <Wallet className="w-4 h-4" />
-                Connect Wallet
-              </Button>
-            )}
+            <ConnectButton />
           </div>
         )}
       </nav>
