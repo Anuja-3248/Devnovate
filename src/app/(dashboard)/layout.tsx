@@ -5,7 +5,6 @@ import { Sidebar } from "@/components/navigation/Sidebar";
 import { Bell, Zap } from "lucide-react";
 import { BalanceProvider, useBalance } from "@/context/BalanceContext";
 import { usePathname } from "next/navigation";
-import { WalletModal } from "@/components/modals/WalletModal";
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -16,12 +15,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 }
 
 function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
-  const [isWalletModalOpen, setIsWalletModalOpen] = useState(false);
   const { ugfBalance } = useBalance();
-
   return (
     <div className="flex h-screen overflow-hidden bg-background">
-      <WalletModal isOpen={isWalletModalOpen} onClose={() => setIsWalletModalOpen(false)} />
       {/* Background ambient glow */}
       <div className="absolute top-[-20%] right-[-10%] w-[50%] h-[50%] bg-primary/10 rounded-full blur-[120px] pointer-events-none" />
       
@@ -38,7 +34,7 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
                <span className="absolute top-1 right-1 w-2 h-2 bg-primary rounded-full" />
              </button>
              
-             <div className="flex items-center gap-4 bg-white/5 border border-white/10 rounded-full p-1 pr-4 hover:bg-white/10 transition-colors cursor-pointer" onClick={() => setIsWalletModalOpen(true)}>
+             <div className="flex items-center gap-4 bg-white/5 border border-white/10 rounded-full p-1 pr-4 hover:bg-white/10 transition-colors cursor-pointer">
               <div className="w-8 h-8 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center">
                 <Zap className="w-4 h-4 text-white" />
               </div>
