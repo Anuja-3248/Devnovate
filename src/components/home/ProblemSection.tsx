@@ -59,26 +59,20 @@ export function ProblemSection() {
   const stepIndex = useTransform(scrollYProgress, [0, 0.25, 0.5, 0.75, 1], [0, 0, 1, 2, 3]);
 
   return (
-    <section ref={containerRef} className="relative h-[400vh] bg-black/40">
-      {/* Sticky Content Wrapper */}
-      <div className="sticky top-0 h-screen w-full flex flex-col md:flex-row items-center justify-between px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto overflow-hidden">
+    <section ref={containerRef} className="relative bg-black/40 py-24">
+      <div className="flex flex-col md:flex-row items-start justify-between px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto gap-12 relative">
         
-        {/* Left Side: Sticky Scrolling Content */}
-        <div className="w-full md:w-1/2 flex flex-col justify-center h-full z-10 py-12">
-          <div className="max-w-md space-y-24">
-            {steps.map((step, idx) => (
-              <ScrollTextItem
-                key={step.id}
-                step={step}
-                index={idx}
-                scrollYProgress={scrollYProgress}
-              />
-            ))}
-          </div>
+        {/* Left Side: Scrolling Content */}
+        <div className="w-full md:w-1/2 flex flex-col pt-[10vh] pb-[10vh]">
+          {steps.map((step) => (
+            <div key={step.id} className="min-h-[60vh] flex flex-col justify-center max-w-md">
+              <ScrollTextItem step={step} />
+            </div>
+          ))}
         </div>
 
         {/* Right Side: Sticky Visualizer */}
-        <div className="w-full md:w-1/2 h-[50vh] md:h-[60vh] flex items-center justify-center relative">
+        <div className="w-full md:w-1/2 h-screen sticky top-0 flex items-center justify-center">
           <div className="w-full max-w-sm aspect-[4/5] glass-panel rounded-3xl p-6 relative overflow-hidden border border-white/10 shadow-[0_0_50px_rgba(0,0,0,0.8)]">
             
             {/* Visual background glows */}
@@ -99,40 +93,9 @@ export function ProblemSection() {
 }
 
 // Subcomponent for scrolling text items
-function ScrollTextItem({
-  step,
-  index,
-  scrollYProgress,
-}: {
-  step: ProblemStep;
-  index: number;
-  scrollYProgress: MotionValue<number>;
-}) {
-  const start = index * 0.25;
-  const end = start + 0.25;
-
-  const r1 = Math.max(0, start - 0.02);
-  const r2 = start + 0.02;
-  const r3 = end - 0.02;
-  const r4 = Math.min(1, end + 0.02);
-  
-  // Transform scroll progress into opacity and y offset for each specific block
-  const opacity = useTransform(
-    scrollYProgress,
-    [r1, r2, r3, r4],
-    [0, 1, 1, 0]
-  );
-  const y = useTransform(
-    scrollYProgress,
-    [r1, r2, r3, r4],
-    [50, 0, 0, -50]
-  );
-
+function ScrollTextItem({ step }: { step: ProblemStep }) {
   return (
-    <motion.div
-      style={{ opacity, y }}
-      className="absolute flex flex-col items-start text-left"
-    >
+    <div className="flex flex-col items-start text-left">
       <div className="inline-flex items-center gap-3 px-4 py-2 rounded-full glass border border-white/5 mb-6">
         {step.icon}
         <span className="text-sm font-semibold text-foreground/80 tracking-wide uppercase">
@@ -145,7 +108,7 @@ function ScrollTextItem({
       <p className="text-lg text-foreground/60 leading-relaxed">
         {step.description}
       </p>
-    </motion.div>
+    </div>
   );
 }
 
