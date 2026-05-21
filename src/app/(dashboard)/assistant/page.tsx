@@ -135,6 +135,9 @@ export default function AIAssistantPage() {
     type: string;
     amount: string;
     receiver: string;
+    receiverAddress?: string;
+    receiverAvatar?: string;
+    receiverResolved?: boolean;
   }) => {
     setModalState({
       isOpen: true,
@@ -213,7 +216,7 @@ export default function AIAssistantPage() {
                     variant="primary"
                     size="sm"
                     className={`w-full ${!msg.action.receiverResolved && msg.action.type === "Transfer" ? "opacity-50 cursor-not-allowed" : ""}`}
-                    onClick={() => msg.action?.receiverResolved !== false ? executeAction(msg.action) : null}
+                    onClick={() => { if (msg.action && msg.action.receiverResolved !== false) executeAction(msg.action); }}
                     disabled={msg.action?.type === "Transfer" && msg.action?.receiverResolved === false}
                   >
                     {msg.action.type === "Transfer" && msg.action.receiverResolved === false
