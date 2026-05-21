@@ -1,11 +1,13 @@
-"use client";
+﻿"use client";
 
-import React, { useState } from "react";
 import { Modal } from "@/components/ui/Modal";
 import { Button } from "@/components/ui/Button";
 import { Zap, CheckCircle, ArrowRight, AlertTriangle } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import { sendMockUSD, mintGhostBadge } from "@/lib/web3";
+import { useState } from "react";
+import { ethers } from "ethers";
+import { sendMockUSD } from "@/lib/sendTransaction";
+import MockUSDABI from "@/abi/MockUSD.json";
 
 interface TransactionModalProps {
   isOpen: boolean;
@@ -19,39 +21,46 @@ interface TransactionModalProps {
 
 export function TransactionModal({ isOpen, onClose, action, amount, receiver, receiverAddress, onSuccess }: TransactionModalProps) {
   const [status, setStatus] = useState<"preview" | "processing" | "success" | "error">("preview");
-  const [txHash, setTxHash] = useState<string>("");
-  const [errorMsg, setErrorMsg] = useState<string>("");
+  const [txHash, setTxHash] = useState("");
+  const [errorMsg, setErrorMsg] = useState("");
 
   const handleConfirm = async () => {
-    setStatus("processing");
-    setErrorMsg("");
-
     try {
-      let hash = "";
+      setStatus("processing");
+      setErrorMsg("");
 
-      if (action === "Transfer" && receiverAddress) {
-        // Extract just the number from amount (e.g. "5 MockUSD" → "5")
-        const numericAmount = amount.replace(/[^0-9.]/g, "");
-        hash = await sendMockUSD(receiverAddress, numericAmount);
-      } else if (action === "Mint NFT" && receiverAddress) {
-        hash = await mintGhostBadge(receiverAddress);
-      } else {
-        // Fallback: simulate for demo purposes if no address is available
-        await new Promise((resolve) => setTimeout(resolve, 2500));
-        hash = "0x" + Math.random().toString(16).slice(2, 10) + "..." + Math.random().toString(16).slice(2, 6);
+      if (!(window as any).ethereum) {
+        alert("MetaMask not found");
+        setStatus("preview");
+        return;
       }
 
-      setTxHash(hash);
+      const provider = new ethers.BrowserProvider((window as any).ethereum);
+
+      await provider.send("eth_requestAccounts", []);
+
+      const signer = await provider.getSigner();
+
+      const tx = await sendMockUSD(
+        receiver,
+        amount,
+        signer,
+        process.env.NEXT_PUBLIC_TOKEN_ADDRESS!,
+        MockUSDABI
+      );
+
+      setTxHash(tx);
       setStatus("success");
+
       setTimeout(() => {
         onSuccess();
         onClose();
         setStatus("preview");
         setTxHash("");
-      }, 3000);
+      }, 2500);
     } catch (err: unknown) {
+      console.error(err);
       const errorMessage = err instanceof Error ? err.message : "Transaction failed. Please try again.";
-      console.error("Transaction error:", err);
       setErrorMsg(errorMessage);
       setStatus("error");
     }
@@ -157,8 +166,8 @@ export function TransactionModal({ isOpen, onClose, action, amount, receiver, re
               <h3 className="text-2xl font-bold text-white mb-2">Transaction Successful!</h3>
               <p className="text-sm text-consumer-green font-medium">Gas fees fully subsidized by UGF.</p>
             </div>
-            <div className="text-xs text-foreground/50 font-mono bg-white/5 px-4 py-2 rounded-lg max-w-full truncate">
-              Hash: {txHash ? `${txHash.slice(0, 10)}...${txHash.slice(-6)}` : "0x8f2d...4a9c"}
+            <div className="text-xs text-foreground/50 font-mono bg-white/5 px-4 py-2 rounded-lg">
+              Hash: {txHash}
             </div>
           </motion.div>
         )}

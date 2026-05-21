@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Plus_Jakarta_Sans, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
-import { Web3Provider } from "@/components/providers/Web3Provider";
+import Web3Provider from "@/providers/Web3Provider";
 
 const plusJakartaSans = Plus_Jakarta_Sans({
   variable: "--font-plus-jakarta",
@@ -29,8 +29,10 @@ export default function RootLayout({
       className={`${plusJakartaSans.variable} ${jetbrainsMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
-        <Web3Provider>{children}</Web3Provider>
+        <Web3Provider>
+          {children}
+        </Web3Provider>
       </body>
     </html>
-  );
+  )
 }
