@@ -19,6 +19,10 @@
       "source": "../src/api.ts"
     }
   },
+  "overrides": {
+    "react": "$react",
+    "react-dom": "$react-dom"
+  },
   "dependencies": {
     "@google/generative-ai": "^0.24.1",
     "@mysten/sui": "^2.17.0",
