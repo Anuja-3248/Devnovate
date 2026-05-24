@@ -16,12 +16,17 @@ import {
   QueryClientProvider,
 } from "@tanstack/react-query";
 
-import { baseSepolia } from "wagmi/chains";
+import { baseSepolia, mainnet } from "wagmi/chains";
+import { http } from "wagmi";
 
 const config = getDefaultConfig({
   appName: "GhostPay",
-  projectId: "demo",
-  chains: [baseSepolia],
+  projectId: process.env.NEXT_PUBLIC_WC_PROJECT_ID || "demo",
+  chains: [baseSepolia, mainnet],
+  transports: {
+    [baseSepolia.id]: http(),
+    [mainnet.id]: http(`https://mainnet.infura.io/v3/${process.env.NEXT_PUBLIC_INFURA_PROJECT_ID}`),
+  },
 });
 
 const queryClient = new QueryClient();
