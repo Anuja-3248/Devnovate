@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { Modal } from "@/components/ui/Modal";
 import { Button } from "@/components/ui/Button";
@@ -48,17 +48,25 @@ export function TransactionModal({ isOpen, onClose, action, amount, receiver, re
         throw new Error("Missing MockUSD contract address. Set NEXT_PUBLIC_MOCK_USD_ADDRESS in .env.local or use the default contract address.");
       }
 
-      if (!recipient) {
-        throw new Error("Missing recipient address for transaction.");
-      }
+      let tx = "";
 
-      const tx = await sendMockUSD(
-        recipient,
-        amount,
-        signer,
-        contractAddress,
-        MockUSDABI
-      );
+      if (action === "Mint NFT") {
+        // For Hackathon prototype: Simulate a successful Mint transaction
+        await new Promise((resolve) => setTimeout(resolve, 2000));
+        tx = "0x" + Array.from({length: 64}, () => Math.floor(Math.random()*16).toString(16)).join('');
+      } else {
+        if (!recipient) {
+          throw new Error("Missing recipient name for transaction.");
+        }
+        // Actually send MockUSD on blockchain
+        tx = await sendMockUSD(
+          recipient,
+          amount,
+          signer,
+          contractAddress,
+          MockUSDABI
+        );
+      }
 
       setTxHash(tx);
       setStatus("success");
