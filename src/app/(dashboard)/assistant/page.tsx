@@ -39,18 +39,22 @@ export default function AIAssistantPage() {
   const [isTyping, setIsTyping] = useState(false);
   const [isListening, setIsListening] = useState(false);
   const recognitionRef = useRef<any>(null);
+  const previousInputRef = useRef("");
 
   useEffect(() => {
     if (typeof window !== "undefined") {
       const SpeechRecognition = window.SpeechRecognition || (window as any).webkitSpeechRecognition;
       if (SpeechRecognition) {
         recognitionRef.current = new SpeechRecognition();
-        recognitionRef.current.continuous = false;
-        recognitionRef.current.interimResults = false;
+        recognitionRef.current.continuous = true;
+        recognitionRef.current.interimResults = true;
         
         recognitionRef.current.onresult = (event: any) => {
-          const transcript = event.results[0][0].transcript;
-          setInput((prev) => (prev ? prev + " " : "") + transcript);
+          let currentTranscript = "";
+          for (let i = event.resultIndex; i < event.results.length; i++) {
+            currentTranscript += event.results[i][0].transcript;
+          }
+          setInput((previousInputRef.current ? previousInputRef.current + " " : "") + currentTranscript);
         };
         
         recognitionRef.current.onend = () => {
@@ -66,6 +70,7 @@ export default function AIAssistantPage() {
       setIsListening(false);
     } else {
       try {
+        previousInputRef.current = input;
         recognitionRef.current?.start();
         setIsListening(true);
       } catch (e) {
