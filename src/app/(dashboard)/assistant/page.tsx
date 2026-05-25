@@ -2,7 +2,7 @@
 
 import React, { useState, useRef, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Bot, User, Send, Sparkles, Zap } from "lucide-react";
+import { Bot, User, Send, Sparkles, Zap, Mic, MicOff } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { TransactionModal } from "@/components/modals/TransactionModal";
 import { useBalance } from "@/context/BalanceContext";
@@ -37,6 +37,42 @@ export default function AIAssistantPage() {
   ]);
   const [input, setInput] = useState("");
   const [isTyping, setIsTyping] = useState(false);
+  const [isListening, setIsListening] = useState(false);
+  const recognitionRef = useRef<any>(null);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const SpeechRecognition = window.SpeechRecognition || (window as any).webkitSpeechRecognition;
+      if (SpeechRecognition) {
+        recognitionRef.current = new SpeechRecognition();
+        recognitionRef.current.continuous = false;
+        recognitionRef.current.interimResults = false;
+        
+        recognitionRef.current.onresult = (event: any) => {
+          const transcript = event.results[0][0].transcript;
+          setInput((prev) => (prev ? prev + " " : "") + transcript);
+        };
+        
+        recognitionRef.current.onend = () => {
+          setIsListening(false);
+        };
+      }
+    }
+  }, []);
+
+  const toggleListening = () => {
+    if (isListening) {
+      recognitionRef.current?.stop();
+      setIsListening(false);
+    } else {
+      try {
+        recognitionRef.current?.start();
+        setIsListening(true);
+      } catch (e) {
+        console.error("Speech recognition error:", e);
+      }
+    }
+  };
   const messagesEndRef = useRef<HTMLDivElement>(null);
   
   const { deductUGF, deductTotalBalance, addTransaction } = useBalance();
@@ -271,16 +307,29 @@ export default function AIAssistantPage() {
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && handleSend(input)}
-            placeholder="Type your command (e.g. 'Send 50 USDC to...')"
-            className="w-full bg-black/40 border border-white/10 rounded-2xl py-4 pl-6 pr-16 text-white placeholder-foreground/40 focus:outline-none focus:border-primary/50 transition-colors shadow-inner"
+            placeholder="Type or speak your command..."
+            className="w-full bg-black/40 border border-white/10 rounded-2xl py-4 pl-6 pr-28 text-white placeholder-foreground/40 focus:outline-none focus:border-primary/50 transition-colors shadow-inner"
           />
-          <button
-            onClick={() => handleSend(input)}
-            disabled={!input.trim()}
-            className="absolute right-2 top-1/2 -translate-y-1/2 p-2 rounded-xl bg-primary text-white hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-          >
-            <Send className="w-5 h-5" />
-          </button>
+          <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-2">
+            <button
+              onClick={toggleListening}
+              className={`p-2 rounded-xl transition-colors ${
+                isListening 
+                  ? "bg-red-500 text-white animate-pulse" 
+                  : "bg-white/5 text-foreground/70 hover:bg-white/10 hover:text-white"
+              }`}
+              title="Voice Input"
+            >
+              {isListening ? <MicOff className="w-5 h-5" /> : <Mic className="w-5 h-5" />}
+            </button>
+            <button
+              onClick={() => handleSend(input)}
+              disabled={!input.trim()}
+              className="p-2 rounded-xl bg-primary text-white hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            >
+              <Send className="w-5 h-5" />
+            </button>
+          </div>
         </div>
       </div>
 
